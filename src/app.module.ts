@@ -14,7 +14,7 @@ import { HealthController } from 'infrastructure/terminus';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      // envFilePath: setEnvironment(),
+      envFilePath: setEnvironment(),
       load: [typeorm],
     }),
     // TypeOrmModule.forRoot({
