@@ -1,4 +1,5 @@
 import { IEntity } from '../shared/IEntity';
+import { hash } from 'bcrypt';
 import { DomainException } from '../exceptions/DomainException';
 
 export class User implements IEntity {
@@ -8,19 +9,46 @@ export class User implements IEntity {
 
   email: string;
 
+  password: string;
+
+  phoneNumber?: string;
+
+  address?: string;
+
+  isActive: boolean;
+
   createdAt?: Date;
 
   updatedAt?: Date;
 
-  constructor(name: string, email: string, id?: number) {
+  private static readonly SALT_ROUNDS = 10;
+
+  constructor(
+    name: string,
+    email: string,
+    password: string,
+    phoneNumber?: string,
+    address?: string,
+    id?: number,
+    isActive: boolean = true,
+  ) {
     this.name = name;
     this.email = email;
+    this.password = password;
+    this.phoneNumber = phoneNumber;
+    this.address = address;
     this.id = id;
+    this.isActive = isActive;
   }
 
   equals(entity: IEntity) {
     if (!(entity instanceof User)) return false;
 
     return this.id === entity.id;
+  }
+
+  async hashPassword(password: string): Promise<void> {
+    const hashedPassword = await hash(password, User.SALT_ROUNDS);
+    this.password = hashedPassword;
   }
 }

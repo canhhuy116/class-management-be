@@ -21,7 +21,15 @@ export class CreateUserVM {
   })
   email: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The password of the user',
+    example: '123456',
+  })
+  password: string;
+
   static fromViewModel(vm: CreateUserVM): User {
-    return new User(vm.name, vm.email);
+    return new User(vm.name, vm.email, vm.password);
   }
 }

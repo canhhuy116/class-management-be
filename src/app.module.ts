@@ -5,33 +5,20 @@ import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import typeorm from 'config/typeorm';
 import { setEnvironment } from 'infrastructure/environments';
+import { AuthModule } from 'infrastructure/ioc/auth.module';
 import { UsersModule } from 'infrastructure/ioc/user.module';
 import { HealthController } from 'infrastructure/terminus';
 
 @Module({
   imports: [
     UsersModule,
+    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
       envFilePath: setEnvironment(),
       load: [typeorm],
     }),
-    // TypeOrmModule.forRoot({
-    //   type: process.env.DB_CONNECTION as any,
-    //   host: process.env.DB_HOST,
-    //   port: parseInt(process.env.DB_PORT, 10),
-    //   username: process.env.DB_USERNAME,
-    //   password: process.env.DB_PASSWORD,
-    //   database: process.env.DB_DATABASE,
-
-    //   entities: ['dist/infrastructure/database/mapper/*.js'],
-
-    //   synchronize: false,
-
-    //   migrationsTableName: 'migrations',
-    //   migrations: ['dist/infrastructure/database/migrations/*.js'],
-    // }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>

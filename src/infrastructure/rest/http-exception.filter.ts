@@ -17,23 +17,20 @@ export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
     const response = ctx.getResponse();
     const request = ctx.getRequest();
     const statusCode = exception.getStatus();
-
-    if (statusCode !== HttpStatus.UNPROCESSABLE_ENTITY)
-      response.status(statusCode).json({
-        statusCode,
-        message: exception.message,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-      });
-
     const exceptionResponse: any = exception.getResponse();
-    console.log(exceptionResponse);
 
-    response.status(statusCode).json({
+    let jsonResponse: any = {
       statusCode,
-      error: exceptionResponse.message,
       timestamp: new Date().toISOString(),
       path: request.url,
-    });
+    };
+
+    if (statusCode !== HttpStatus.UNPROCESSABLE_ENTITY) {
+      jsonResponse.message = exception.message;
+    } else {
+      jsonResponse.error = exceptionResponse.message;
+    }
+
+    response.status(statusCode).json(jsonResponse);
   }
 }

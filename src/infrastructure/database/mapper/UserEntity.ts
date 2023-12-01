@@ -16,6 +16,26 @@ export const UserEntity = new EntitySchema<User>({
       type: String,
       length: 100,
     },
+    password: {
+      type: String,
+      length: 100,
+    },
+    phoneNumber: {
+      type: String,
+      length: 20,
+      nullable: true,
+      name: 'phone_number',
+    },
+    address: {
+      type: String,
+      length: 100,
+      nullable: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      name: 'is_active',
+    },
   },
   orderBy: {
     createdAt: 'ASC',
