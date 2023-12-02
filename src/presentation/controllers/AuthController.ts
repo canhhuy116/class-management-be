@@ -5,6 +5,8 @@ import {
   UseInterceptors,
   Get,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,6 +25,8 @@ import { SignUpVM } from 'presentation/view-model/auth/SignUpVM';
 import { UserVM } from 'presentation/view-model/users/UserVM';
 import { LoginVM } from 'presentation/view-model/auth/LoginVM';
 import { TokenInterceptor } from 'infrastructure/interceptor/token.interceptor';
+import { JWTAuthGuard } from 'infrastructure/guards/jwt-auth.guard';
+import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -98,5 +102,28 @@ export class AuthController {
     const user = await this.authUseCase.login(LoginVM.fromViewModel(loginUser));
 
     return user;
+  }
+
+  @Get('me')
+  @ApiOperation({
+    summary: 'Get current user',
+  })
+  @ApiCreatedResponse({ description: 'User logged in.', type: UserVM })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while getting current user',
+    type: UnprocessableEntityError,
+  })
+  @UseGuards(JWTAuthGuard)
+  async me(@Request() req: RequestWithUser) {
+    const user = await this.authUseCase.getMe(req.user.userId);
+
+    return new SuccessResponseDTO({
+      message: 'User logged in successfully',
+      metadata: UserVM.toViewModel(user),
+    });
   }
 }

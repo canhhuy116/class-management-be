@@ -11,6 +11,7 @@ import { IMailService } from 'application/ports/IMailService';
 import { IUsersRepository } from 'application/ports/IUserRepository';
 import { compare } from 'bcrypt';
 import { User } from 'domain/models/User';
+import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 @Injectable()
 export class AuthUseCase {
   private readonly logger = new Logger(AuthUseCase.name);
@@ -113,6 +114,16 @@ export class AuthUseCase {
 
     if (!user.isConfirmed) {
       throw new UnauthorizedException('User not confirmed');
+    }
+
+    return user;
+  }
+
+  async getMe(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new EntityNotFoundException('User not found');
     }
 
     return user;

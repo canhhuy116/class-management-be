@@ -6,9 +6,12 @@ import { AuthController } from 'presentation/controllers/AuthController';
 import { MailModule } from './mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from 'infrastructure/guards/JwtStrategy';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       signOptions: {
         algorithm: 'HS384',
@@ -24,6 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [
     AuthUseCase,
     { provide: IUsersRepository, useClass: UsersRepository },
+    JwtStrategy,
   ],
 })
 export class AuthModule {}

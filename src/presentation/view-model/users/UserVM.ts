@@ -25,14 +25,6 @@ export class UserVM {
   })
   email: string;
 
-  @Expose()
-  @ApiProperty({ description: 'The crational date of the user' })
-  createdAt: Date;
-
-  @Expose()
-  @ApiProperty({ description: 'The date of the last user update' })
-  updatedAt: Date;
-
   static toViewModel(user: User): UserVM {
     return plainToClass(UserVM, user, { excludeExtraneousValues: true });
   }

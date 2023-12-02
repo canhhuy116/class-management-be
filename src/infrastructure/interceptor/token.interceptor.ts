@@ -28,7 +28,11 @@ export class TokenInterceptor implements NestInterceptor {
         const response = context.switchToHttp().getResponse<Response>();
 
         const secretKey = this.configService.get('SECRET_KEY');
-        const payload: JwtPayloadData = { userId: user.id };
+
+        const payloadData: JwtPayloadData = { userId: user.id };
+        const payload = {
+          sub: payloadData,
+        };
 
         const token = this.authUseCase.signToken(payload, {
           secret: secretKey,
