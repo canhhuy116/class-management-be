@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'infrastructure/guards/JwtStrategy';
 import { GoogleStrategy } from 'infrastructure/guards/GoogleStrategy';
+import { FacebookStrategy } from 'infrastructure/guards/FacebookStrategy';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { GoogleStrategy } from 'infrastructure/guards/GoogleStrategy';
     { provide: IUsersRepository, useClass: UsersRepository },
     JwtStrategy,
     GoogleStrategy,
+    FacebookStrategy,
   ],
 })
 export class AuthModule {}

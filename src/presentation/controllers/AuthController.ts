@@ -239,4 +239,21 @@ export class AuthController {
   async googleLoginCallback(@Req() req: RequestWithFullUser) {
     return req.user;
   }
+
+  @Get('facebook')
+  @ApiOperation({
+    summary: 'Facebook login',
+  })
+  @UseGuards(AuthGuard('facebook'))
+  facebookLogin() {}
+
+  @Get('facebook/callback')
+  @ApiOperation({
+    summary: 'Facebook callback',
+  })
+  @UseGuards(AuthGuard('facebook'))
+  @UseInterceptors(TokenInterceptor)
+  async facebookLoginCallback(@Req() req: RequestWithFullUser) {
+    return req.user;
+  }
 }

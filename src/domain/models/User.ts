@@ -17,6 +17,8 @@ export class User implements IEntity {
 
   googleId?: string;
 
+  facebookId?: string;
+
   isActive?: boolean;
 
   isConfirmed?: boolean;
@@ -34,6 +36,7 @@ export class User implements IEntity {
     phoneNumber?: string,
     address?: string,
     googleId?: string,
+    facebookId?: string,
   ) {
     this.name = name;
     this.email = email;
@@ -41,6 +44,7 @@ export class User implements IEntity {
     this.phoneNumber = phoneNumber;
     this.address = address;
     this.googleId = googleId;
+    this.facebookId = facebookId;
   }
 
   equals(entity: IEntity) {

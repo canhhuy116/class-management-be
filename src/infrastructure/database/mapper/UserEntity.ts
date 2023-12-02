@@ -38,6 +38,12 @@ export const UserEntity = new EntitySchema<User>({
       nullable: true,
       name: 'google_id',
     },
+    facebookId: {
+      type: String,
+      length: 100,
+      nullable: true,
+      name: 'facebook_id',
+    },
     isActive: {
       type: Boolean,
       default: true,

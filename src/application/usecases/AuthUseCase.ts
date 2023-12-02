@@ -15,6 +15,7 @@ import { User } from 'domain/models/User';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 import { ResetPasswordDTO } from 'application/dtos/ResetPasswordDTO';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
+import { Profile } from 'passport';
 @Injectable()
 export class AuthUseCase {
   private readonly logger = new Logger(AuthUseCase.name);
@@ -212,33 +213,22 @@ export class AuthUseCase {
     await this.userRepository.save(user);
   }
 
-  async loginByGoogle(profile: any): Promise<User> {
-    const { id, displayName, emails } = profile;
-
-    const user = await this.userRepository.findOne({
-      where: { email: emails[0].value },
+  async loginOauth2(user: User): Promise<User> {
+    const findUser = await this.userRepository.findOne({
+      where: { email: user.email },
     });
 
-    if (user) {
-      if (!user.isConfirmed) {
-        user.isConfirmed = true;
+    if (findUser) {
+      if (!findUser.isConfirmed) {
+        findUser.isConfirmed = true;
         await this.userRepository.save(user);
       }
-      return user;
+      return findUser;
     }
 
-    const newUser = new User(
-      displayName,
-      emails[0].value,
-      null,
-      null,
-      null,
-      id,
-    );
+    user.isConfirmed = true;
 
-    newUser.isConfirmed = true;
-
-    const createdUser = await this.userRepository.save(newUser);
+    const createdUser = await this.userRepository.save(user);
 
     return createdUser;
   }

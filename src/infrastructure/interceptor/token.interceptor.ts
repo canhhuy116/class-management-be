@@ -47,7 +47,7 @@ export class TokenInterceptor implements NestInterceptor {
           secure: this.configService.get('NODE_ENV') === 'production',
         });
 
-        if (user.googleId) {
+        if (user.googleId || user.facebookId) {
           response.redirect(302, `${this.configService.get('FRONTEND_URL')}/`);
 
           return;
