@@ -9,13 +9,15 @@ export class User implements IEntity {
 
   email: string;
 
-  password: string;
+  password?: string;
 
   phoneNumber?: string;
 
   address?: string;
 
-  isActive: boolean;
+  isActive?: boolean;
+
+  isConfirmed?: boolean;
 
   createdAt?: Date;
 
@@ -30,7 +32,6 @@ export class User implements IEntity {
     phoneNumber?: string,
     address?: string,
     id?: number,
-    isActive: boolean = true,
   ) {
     this.name = name;
     this.email = email;
@@ -38,7 +39,6 @@ export class User implements IEntity {
     this.phoneNumber = phoneNumber;
     this.address = address;
     this.id = id;
-    this.isActive = isActive;
   }
 
   equals(entity: IEntity) {

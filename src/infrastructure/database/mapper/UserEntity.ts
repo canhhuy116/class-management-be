@@ -19,6 +19,7 @@ export const UserEntity = new EntitySchema<User>({
     password: {
       type: String,
       length: 100,
+      nullable: true,
     },
     phoneNumber: {
       type: String,
@@ -35,6 +36,11 @@ export const UserEntity = new EntitySchema<User>({
       type: Boolean,
       default: true,
       name: 'is_active',
+    },
+    isConfirmed: {
+      type: Boolean,
+      default: false,
+      name: 'is_confirmed',
     },
   },
   orderBy: {
