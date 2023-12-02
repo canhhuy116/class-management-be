@@ -17,7 +17,7 @@ import { UserVM } from 'presentation/view-model/users/UserVM';
 import { NotFoundError } from 'rxjs';
 
 @ApiTags('Users')
-@Controller('users')
+@Controller('api/v1/users')
 export class UsersController {
   constructor(private readonly usersUseCases: UsersUseCases) {}
 

@@ -3,6 +3,7 @@ import {
   Logger,
   UnauthorizedException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginDTO } from 'application/dtos/LoginDTO';
@@ -13,6 +14,7 @@ import { compare } from 'bcrypt';
 import { User } from 'domain/models/User';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 import { ResetPasswordDTO } from 'application/dtos/ResetPasswordDTO';
+import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 @Injectable()
 export class AuthUseCase {
   private readonly logger = new Logger(AuthUseCase.name);
@@ -30,7 +32,7 @@ export class AuthUseCase {
     });
 
     if (findUser) {
-      throw new UnauthorizedException('User already exists');
+      throw new EntityAlreadyExistException('User already exists');
     }
 
     await user.hashPassword(user.password);
@@ -70,12 +72,40 @@ export class AuthUseCase {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new EntityNotFoundException('User not found');
     }
 
     user.isConfirmed = true;
 
     await this.userRepository.save(user);
+  }
+
+  async resendConfirmEmail(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new EntityNotFoundException('User not found');
+    }
+
+    if (user.isConfirmed) {
+      throw new EntityAlreadyExistException('User already confirmed');
+    }
+
+    const secretKeyConfirmEmail = this.configService.get('SECRET_KEY_CONFIRM');
+
+    const token = this.signToken(
+      { id: user.id },
+      { secret: secretKeyConfirmEmail, expiresIn: '15m' },
+    );
+
+    const confirmLink = `${this.configService.get(
+      'FRONTEND_URL',
+    )}/confirm?token=${token}`;
+
+    const bodyMessage = `Hello ${user.name},\n\nPlease confirm your email by clicking on the link below.\n\n${confirmLink}\n\nThanks`;
+
+    // side effect so we don't need to wait for it
+    this.mailService.sendMail(user.email, 'Confirm your email', bodyMessage);
   }
 
   async login(loginData: LoginDTO): Promise<User> {
@@ -86,11 +116,11 @@ export class AuthUseCase {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new EntityNotFoundException('User not found');
     }
 
     if (!user.isConfirmed) {
-      throw new UnauthorizedException('User not confirmed');
+      throw new ForbiddenException('User not confirmed');
     }
 
     const passwordMatch = await compare(loginData.password, user.password);
@@ -112,11 +142,11 @@ export class AuthUseCase {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new EntityNotFoundException('User not found');
     }
 
     if (!user.isConfirmed) {
-      throw new UnauthorizedException('User not confirmed');
+      throw new ForbiddenException('User not confirmed');
     }
 
     return user;

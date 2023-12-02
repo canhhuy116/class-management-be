@@ -5,30 +5,40 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { DomainException } from 'domain/exceptions/DomainException';
 
 /**
  * Http Error Filter.
- * Gets an HttpException in code and creates an error response
+ * Gets an HttpException or DomainException in code and creates an error response
  */
-@Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
-  catch(exception: HttpException, host: ArgumentsHost) {
+@Catch(HttpException, DomainException)
+export class HttpExceptionFilter
+  implements ExceptionFilter<HttpException | DomainException>
+{
+  catch(exception: HttpException | DomainException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
-    const statusCode = exception.getStatus();
-    const exceptionResponse: any = exception.getResponse();
 
+    let statusCode: number;
+    let exceptionResponse: any;
     let jsonResponse: any = {
-      statusCode,
       timestamp: new Date().toISOString(),
       path: request.url,
     };
 
-    if (statusCode !== HttpStatus.UNPROCESSABLE_ENTITY) {
+    if (exception instanceof HttpException) {
+      statusCode = exception.getStatus();
+      exceptionResponse = exception.getResponse();
+
+      if (statusCode !== HttpStatus.UNPROCESSABLE_ENTITY) {
+        jsonResponse.message = exception.message;
+      } else {
+        jsonResponse.error = exceptionResponse.message;
+      }
+    } else if (exception instanceof DomainException) {
+      statusCode = HttpStatus.BAD_REQUEST;
       jsonResponse.message = exception.message;
-    } else {
-      jsonResponse.error = exceptionResponse.message;
     }
 
     response.status(statusCode).json(jsonResponse);

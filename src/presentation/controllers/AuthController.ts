@@ -91,6 +91,35 @@ export class AuthController {
     });
   }
 
+  @Get('resend-confirmation-email')
+  @ApiOperation({
+    summary: 'Resend confirmation email',
+  })
+  @ApiCreatedResponse({ description: 'Email sent successfully!', type: UserVM })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while resending confirmation email',
+    type: UnprocessableEntityError,
+  })
+  @ApiQuery({
+    name: 'email',
+    type: String,
+    required: true,
+    description: 'Email',
+    example: 'a@example.com',
+  })
+  async resendConfirmEmail(@Query('email') email: string) {
+    await this.authUseCase.resendConfirmEmail(email);
+
+    return new SuccessResponseDTO({
+      message: 'Email sent successfully!',
+      metadata: null,
+    });
+  }
+
   @Post('login')
   @ApiOperation({
     summary: 'Login user',
