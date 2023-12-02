@@ -40,8 +40,6 @@ export class AuthUseCase {
 
     const secretKeyConfirmEmail = this.configService.get('SECRET_KEY_CONFIRM');
 
-    // set expiration time to 15 minutes
-
     const token = this.jwtService.sign(
       secretKeyConfirmEmail,
       { id: newUser.id },
@@ -54,5 +52,23 @@ export class AuthUseCase {
 
     // side effect so we don't need to wait for it
     this.mailService.sendMail(newUser.email, 'Confirm your email', confirmLink);
+  }
+
+  async confirmEmail(token: string): Promise<void> {
+    const secretKeyConfirmEmail = this.configService.get('SECRET_KEY_CONFIRM');
+
+    const payload = this.jwtService.verify(secretKeyConfirmEmail, token);
+
+    const user = await this.userRepository.findOne({
+      where: { id: payload.id },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    user.isConfirmed = true;
+
+    await this.userRepository.save(user);
   }
 }

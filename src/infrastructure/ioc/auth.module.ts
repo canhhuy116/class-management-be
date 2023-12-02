@@ -14,7 +14,7 @@ import { IJwtService } from 'application/ports/IJwtService';
   providers: [
     AuthUseCase,
     { provide: IUsersRepository, useClass: UsersRepository },
-    { provide: IJwtService, useClass: JwtService}
+    { provide: IJwtService, useClass: JwtService },
   ],
 })
 export class AuthModule {}
