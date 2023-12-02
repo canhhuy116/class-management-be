@@ -37,7 +37,7 @@ export class AuthController {
     await this.authUseCase.signup(SignUpVM.fromViewModel(signupUser));
 
     return new SuccessResponse({
-      message: 'User created successfully',
+      message: 'User created successfully! Check your email to confirm it.',
       metadata: null,
     });
   }
