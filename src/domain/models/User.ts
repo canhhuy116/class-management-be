@@ -15,6 +15,8 @@ export class User implements IEntity {
 
   address?: string;
 
+  googleId?: string;
+
   isActive?: boolean;
 
   isConfirmed?: boolean;
@@ -28,17 +30,17 @@ export class User implements IEntity {
   constructor(
     name: string,
     email: string,
-    password: string,
+    password?: string,
     phoneNumber?: string,
     address?: string,
-    id?: number,
+    googleId?: string,
   ) {
     this.name = name;
     this.email = email;
     this.password = password;
     this.phoneNumber = phoneNumber;
     this.address = address;
-    this.id = id;
+    this.googleId = googleId;
   }
 
   equals(entity: IEntity) {

@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'infrastructure/guards/JwtStrategy';
+import { GoogleStrategy } from 'infrastructure/guards/GoogleStrategy';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { JwtStrategy } from 'infrastructure/guards/JwtStrategy';
     AuthUseCase,
     { provide: IUsersRepository, useClass: UsersRepository },
     JwtStrategy,
+    GoogleStrategy,
   ],
 })
 export class AuthModule {}

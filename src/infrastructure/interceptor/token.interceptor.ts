@@ -47,6 +47,12 @@ export class TokenInterceptor implements NestInterceptor {
           secure: this.configService.get('NODE_ENV') === 'production',
         });
 
+        if (user.googleId) {
+          response.redirect(302, `${this.configService.get('FRONTEND_URL')}/`);
+
+          return;
+        }
+
         return new SuccessResponseDTO({
           message: 'User logged in successfully',
           metadata: { token: token },

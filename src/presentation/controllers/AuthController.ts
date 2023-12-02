@@ -8,6 +8,8 @@ import {
   UseGuards,
   Request,
   Put,
+  Req,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,7 +19,6 @@ import {
   ApiBadRequestResponse,
   ApiQuery,
   ApiResponse,
-  ApiBody,
 } from '@nestjs/swagger';
 import { AuthUseCase } from 'application/usecases/AuthUseCase';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
@@ -28,9 +29,11 @@ import { SignUpVM } from 'presentation/view-model/auth/SignUpVM';
 import { UserVM } from 'presentation/view-model/users/UserVM';
 import { LoginVM } from 'presentation/view-model/auth/LoginVM';
 import { TokenInterceptor } from 'infrastructure/interceptor/token.interceptor';
-import { JWTAuthGuard } from 'infrastructure/guards/jwt-auth.guard';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { ResetPasswordVM } from 'presentation/view-model/auth/ResetPasswordVM';
+import { AuthGuard } from '@nestjs/passport';
+import { RequestWithFullUser } from 'infrastructure/guards/GoogleStrategy';
+import { Response } from 'express';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -121,7 +124,7 @@ export class AuthController {
     description: 'Validation error while getting current user',
     type: UnprocessableEntityError,
   })
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   async me(@Request() req: RequestWithUser) {
     const user = await this.authUseCase.getMe(req.user.userId);
 
@@ -189,5 +192,22 @@ export class AuthController {
       message: 'Password reset successfully!',
       metadata: null,
     });
+  }
+
+  @Get('google')
+  @ApiOperation({
+    summary: 'Google login',
+  })
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {}
+
+  @Get('google/callback')
+  @ApiOperation({
+    summary: 'Google callback',
+  })
+  @UseGuards(AuthGuard('google'))
+  @UseInterceptors(TokenInterceptor)
+  async googleLoginCallback(@Req() req: RequestWithFullUser) {
+    return req.user;
   }
 }

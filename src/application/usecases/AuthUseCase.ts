@@ -181,4 +181,35 @@ export class AuthUseCase {
 
     await this.userRepository.save(user);
   }
+
+  async loginByGoogle(profile: any): Promise<User> {
+    const { id, displayName, emails } = profile;
+
+    const user = await this.userRepository.findOne({
+      where: { email: emails[0].value },
+    });
+
+    if (user) {
+      if (!user.isConfirmed) {
+        user.isConfirmed = true;
+        await this.userRepository.save(user);
+      }
+      return user;
+    }
+
+    const newUser = new User(
+      displayName,
+      emails[0].value,
+      null,
+      null,
+      null,
+      id,
+    );
+
+    newUser.isConfirmed = true;
+
+    const createdUser = await this.userRepository.save(newUser);
+
+    return createdUser;
+  }
 }

@@ -32,6 +32,12 @@ export const UserEntity = new EntitySchema<User>({
       length: 100,
       nullable: true,
     },
+    googleId: {
+      type: String,
+      length: 100,
+      nullable: true,
+      name: 'google_id',
+    },
     isActive: {
       type: Boolean,
       default: true,

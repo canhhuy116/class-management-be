@@ -17,9 +17,7 @@ declare const module: any;
 
 async function bootstrap() {
   try {
-    const app = await NestFactory.create(AppModule, {
-      cors: true,
-    });
+    const app = await NestFactory.create(AppModule);
     const configService = app.get(ConfigService);
     Logger.log(
       `Environment: ${chalk
@@ -28,6 +26,12 @@ async function bootstrap() {
       'Bootstrap',
     );
 
+    // REST Global middlewares
+    app.enableCors({
+      origin: configService.get('FRONTEND_URL'),
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      credentials: true,
+    });
     app.use(helmet());
     app.use(cookieParser(configService.get('SECRET_KEY')));
     app.use(compression());
