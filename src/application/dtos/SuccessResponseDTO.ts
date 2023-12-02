@@ -20,7 +20,7 @@ export enum ReasonPhrase {
   IM_USED = 'IM Used',
 }
 
-export class SuccessResponse {
+export class SuccessResponseDTO {
   public message: string;
   public status: StatusCode;
   public metadata: Record<string, any>;
@@ -42,7 +42,7 @@ export class SuccessResponse {
   }
 }
 
-export class OK extends SuccessResponse {
+export class OK extends SuccessResponseDTO {
   constructor({
     message,
     metadata,
@@ -54,7 +54,7 @@ export class OK extends SuccessResponse {
   }
 }
 
-export class Created extends SuccessResponse {
+export class Created extends SuccessResponseDTO {
   public options: Record<string, any>;
 
   constructor({

@@ -15,12 +15,14 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AuthUseCase } from 'application/usecases/AuthUseCase';
-import { SuccessResponse } from 'core/SuccessResponse';
+import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
 import { SignUpVM } from 'presentation/view-model/auth/SignUpVM';
 import { UserVM } from 'presentation/view-model/users/UserVM';
+import { LoginVM } from 'presentation/view-model/auth/LoginVM';
+import { TokenInterceptor } from 'infrastructure/interceptor/token.interceptor';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -44,7 +46,7 @@ export class AuthController {
   async signup(@Body() signupUser: SignUpVM) {
     await this.authUseCase.signup(SignUpVM.fromViewModel(signupUser));
 
-    return new SuccessResponse({
+    return new SuccessResponseDTO({
       message: 'User created successfully! Check your email to confirm it.',
       metadata: null,
     });
@@ -72,9 +74,29 @@ export class AuthController {
   async confirmEmail(@Query('token') token: string) {
     await this.authUseCase.confirmEmail(token);
 
-    return new SuccessResponse({
+    return new SuccessResponseDTO({
       message: 'User email confirmed successfully!',
       metadata: null,
     });
+  }
+
+  @Post('login')
+  @ApiOperation({
+    summary: 'Login user',
+  })
+  @ApiCreatedResponse({ description: 'User logged in.', type: UserVM })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while logging user',
+    type: UnprocessableEntityError,
+  })
+  @UseInterceptors(TokenInterceptor)
+  async login(@Body() loginUser: LoginVM) {
+    const user = await this.authUseCase.login(LoginVM.fromViewModel(loginUser));
+
+    return user;
   }
 }

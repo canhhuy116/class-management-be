@@ -5,18 +5,19 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IJwtService } from 'application/ports/IJwtService';
+import { LoginDTO } from 'application/dtos/LoginDTO';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { IMailService } from 'application/ports/IMailService';
 import { IUsersRepository } from 'application/ports/IUserRepository';
+import { compare } from 'bcrypt';
 import { User } from 'domain/models/User';
-
 @Injectable()
 export class AuthUseCase {
   private readonly logger = new Logger(AuthUseCase.name);
 
   constructor(
     private readonly userRepository: IUsersRepository,
-    private readonly jwtService: IJwtService,
+    private readonly jwtService: JwtService,
     private readonly mailService: IMailService,
     private readonly configService: ConfigService,
   ) {}
@@ -40,10 +41,9 @@ export class AuthUseCase {
 
     const secretKeyConfirmEmail = this.configService.get('SECRET_KEY_CONFIRM');
 
-    const token = this.jwtService.sign(
-      secretKeyConfirmEmail,
+    const token = this.signToken(
       { id: newUser.id },
-      { expiresIn: '15m' },
+      { secret: secretKeyConfirmEmail, expiresIn: '15m' },
     );
 
     const confirmLink = `${this.configService.get(
@@ -57,7 +57,9 @@ export class AuthUseCase {
   async confirmEmail(token: string): Promise<void> {
     const secretKeyConfirmEmail = this.configService.get('SECRET_KEY_CONFIRM');
 
-    const payload = this.jwtService.verify(secretKeyConfirmEmail, token);
+    const payload = this.jwtService.verify(token, {
+      secret: secretKeyConfirmEmail,
+    });
 
     const user = await this.userRepository.findOne({
       where: { id: payload.id },
@@ -70,5 +72,49 @@ export class AuthUseCase {
     user.isConfirmed = true;
 
     await this.userRepository.save(user);
+  }
+
+  async login(loginData: LoginDTO): Promise<User> {
+    this.logger.log('Login user');
+
+    const user = await this.userRepository.findOne({
+      where: { email: loginData.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.isConfirmed) {
+      throw new UnauthorizedException('User not confirmed');
+    }
+
+    const passwordMatch = await compare(loginData.password, user.password);
+
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Invalid password or email');
+    }
+
+    return user;
+  }
+
+  signToken(payload: object | Buffer, options?: JwtSignOptions): string {
+    const token = this.jwtService.sign(payload, options);
+
+    return token;
+  }
+
+  async verifyPayload(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.isConfirmed) {
+      throw new UnauthorizedException('User not confirmed');
+    }
+
+    return user;
   }
 }

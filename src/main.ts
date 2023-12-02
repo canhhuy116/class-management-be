@@ -5,9 +5,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as bodyParser from 'body-parser';
 import * as chalk from 'chalk';
 import * as compression from 'compression';
+import * as cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from 'infrastructure/rest/http-exception.filter';
 import { LoggingInterceptor } from 'infrastructure/rest/logging.interceptor';
@@ -29,6 +29,7 @@ async function bootstrap() {
     );
 
     app.use(helmet());
+    app.use(cookieParser(configService.get('SECRET_KEY')));
     app.use(compression());
     app.use(bodyParser.json({ limit: '50mb' }));
     app.use(
