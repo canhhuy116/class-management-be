@@ -7,6 +7,7 @@ import {
   Query,
   UseGuards,
   Request,
+  Put,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,6 +16,8 @@ import {
   ApiUnprocessableEntityResponse,
   ApiBadRequestResponse,
   ApiQuery,
+  ApiResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AuthUseCase } from 'application/usecases/AuthUseCase';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
@@ -27,6 +30,7 @@ import { LoginVM } from 'presentation/view-model/auth/LoginVM';
 import { TokenInterceptor } from 'infrastructure/interceptor/token.interceptor';
 import { JWTAuthGuard } from 'infrastructure/guards/jwt-auth.guard';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
+import { ResetPasswordVM } from 'presentation/view-model/auth/ResetPasswordVM';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -124,6 +128,66 @@ export class AuthController {
     return new SuccessResponseDTO({
       message: 'User logged in successfully',
       metadata: UserVM.toViewModel(user),
+    });
+  }
+
+  @Get('forgot-password')
+  @ApiOperation({
+    summary: 'Forgot password',
+  })
+  @ApiResponse({
+    description: 'Email sent successfully!',
+    type: SuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while getting current user',
+    type: UnprocessableEntityError,
+  })
+  @ApiQuery({
+    name: 'email',
+    type: String,
+    required: true,
+    description: 'Email',
+    example: 'a@example.com',
+  })
+  async forgotPassword(@Query('email') email: string) {
+    await this.authUseCase.forgotPassword(email);
+
+    return new SuccessResponseDTO({
+      message:
+        'Email sent successfully! Check your email to reset your password.',
+      metadata: null,
+    });
+  }
+
+  @Put('reset-password')
+  @ApiOperation({
+    summary: 'Reset password',
+  })
+  @ApiResponse({
+    description: 'Password reset successfully!',
+    type: SuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while getting current user',
+    type: UnprocessableEntityError,
+  })
+  async resetPassword(@Body() resetPasswordBody: ResetPasswordVM) {
+    await this.authUseCase.resetPassword(
+      ResetPasswordVM.fromViewModel(resetPasswordBody),
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Password reset successfully!',
+      metadata: null,
     });
   }
 }

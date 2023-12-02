@@ -12,6 +12,7 @@ import { IUsersRepository } from 'application/ports/IUserRepository';
 import { compare } from 'bcrypt';
 import { User } from 'domain/models/User';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
+import { ResetPasswordDTO } from 'application/dtos/ResetPasswordDTO';
 @Injectable()
 export class AuthUseCase {
   private readonly logger = new Logger(AuthUseCase.name);
@@ -51,8 +52,10 @@ export class AuthUseCase {
       'FRONTEND_URL',
     )}/confirm?token=${token}`;
 
+    const bodyMessage = `Hello ${newUser.name},\n\nPlease confirm your email by clicking on the link below.\n\n${confirmLink}\n\nThanks`;
+
     // side effect so we don't need to wait for it
-    this.mailService.sendMail(newUser.email, 'Confirm your email', confirmLink);
+    this.mailService.sendMail(newUser.email, 'Confirm your email', bodyMessage);
   }
 
   async confirmEmail(token: string): Promise<void> {
@@ -127,5 +130,55 @@ export class AuthUseCase {
     }
 
     return user;
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new EntityNotFoundException('User not found');
+    }
+
+    const secretKeyForgotPassword = this.configService.get(
+      'SECRET_KEY_FORGOT_PASSWORD',
+    );
+
+    const token = this.signToken(
+      { id: user.id },
+      { secret: secretKeyForgotPassword, expiresIn: '15m' },
+    );
+
+    const forgotPasswordLink = `${this.configService.get(
+      'FRONTEND_URL',
+    )}/reset-password?token=${token}`;
+
+    const bodyMessage = `Hello ${user.name},\n\nYou requested to reset your password. Please click on the link below to reset it.\n\n${forgotPasswordLink}\n\nIf you didn't request this, please ignore this email.\n\nThanks`;
+
+    // side effect so we don't need to wait for it
+    this.mailService.sendMail(user.email, 'Reset your password', bodyMessage);
+  }
+
+  async resetPassword(resetPasswordData: ResetPasswordDTO): Promise<void> {
+    const { token, password: newPassword } = resetPasswordData;
+
+    const secretKeyForgotPassword = this.configService.get(
+      'SECRET_KEY_FORGOT_PASSWORD',
+    );
+
+    const payload = this.jwtService.verify(token, {
+      secret: secretKeyForgotPassword,
+    });
+
+    const user = await this.userRepository.findOne({
+      where: { id: payload.id },
+    });
+
+    if (!user) {
+      throw new EntityNotFoundException('User not found');
+    }
+
+    await user.hashPassword(newPassword);
+
+    await this.userRepository.save(user);
   }
 }
