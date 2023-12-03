@@ -48,7 +48,10 @@ export class TokenInterceptor implements NestInterceptor {
         });
 
         if (user.googleId || user.facebookId) {
-          response.redirect(302, `${this.configService.get('FRONTEND_URL')}/`);
+          const urlSuccess = `${this.configService.get(
+            'FRONTEND_URL',
+          )}/auth/success?token=${token}`;
+          response.redirect(302, urlSuccess);
 
           return;
         }
