@@ -120,6 +120,10 @@ export class AuthUseCase {
       throw new EntityNotFoundException('User not found');
     }
 
+    if (user.googleId || user.facebookId) {
+      throw new ForbiddenException('User registered with social network');
+    }
+
     if (!user.isConfirmed) {
       throw new ForbiddenException('User not confirmed');
     }
