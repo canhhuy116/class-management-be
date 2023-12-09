@@ -13,7 +13,6 @@ export class True1701453742867 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "users" ADD "is_active" boolean NOT NULL DEFAULT true`,
     );
-    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "password"`);
     await queryRunner.query(
       `ALTER TABLE "users" ADD "password" character varying(100) NOT NULL`,
     );
