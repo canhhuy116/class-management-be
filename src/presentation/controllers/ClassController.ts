@@ -131,4 +131,28 @@ export class ClassController {
       metadata: null,
     });
   }
+
+  @Get(':id/invitation-code')
+  @ApiOperation({
+    summary: 'Get class invitation code',
+  })
+  @ApiOkResponse({ description: 'Invitation code founded.', type: String })
+  @ApiNotFoundResponse({
+    description: 'Class cannot be founded.',
+    type: NotFoundError,
+  })
+  async getInvitationCode(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<SuccessResponseDTO> {
+    const invitationCode = await this.classUseCases.getInvitationCode(
+      parseInt(id, 10),
+      req.user.userId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Invitation code founded',
+      metadata: { code: invitationCode },
+    });
+  }
 }

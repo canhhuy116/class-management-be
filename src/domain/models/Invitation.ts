@@ -18,10 +18,18 @@ export class Invitation implements IEntity {
 
   updatedAt?: Date;
 
-  constructor(code: string, inviterId: number, classId: number) {
+  constructor(
+    code: string,
+    inviterId: number,
+    inviteeEmail: string,
+    classId: number,
+    role: Role,
+  ) {
     this.code = code;
     this.inviterId = inviterId;
     this.classId = classId;
+    this.role = role;
+    this.inviteeEmail = inviteeEmail;
   }
 
   equals(entity: IEntity) {

@@ -1,8 +1,12 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IClassRepository } from 'application/ports/IClassRepository';
+import { IInvitationRepository } from 'application/ports/IInvitationRepository';
 import { IUsersRepository } from 'application/ports/IUserRepository';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 import { Class } from 'domain/models/Class';
+import { Invitation } from 'domain/models/Invitation';
+import { Role } from 'domain/models/Role';
+import { generateRandomString } from 'utils/random';
 
 @Injectable()
 export class ClassUseCases {
@@ -11,6 +15,7 @@ export class ClassUseCases {
   constructor(
     private readonly classRepository: IClassRepository,
     private readonly userRepository: IUsersRepository,
+    private readonly invitationRepository: IInvitationRepository,
   ) {}
 
   async getClasses(currentUserId: number): Promise<Class[]> {
@@ -109,5 +114,46 @@ export class ClassUseCases {
     }
 
     return classDetail;
+  }
+
+  async getInvitationCode(classId: number, currentUserId: number) {
+    this.logger.log(`Get invitation code from class: ${classId}`);
+
+    const classDetail = await this.classRepository.findOne({
+      where: { id: classId },
+      relations: ['teachers', 'students'],
+    });
+
+    if (!classDetail) {
+      throw new Error('Class not found');
+    }
+
+    if (
+      classDetail.ownerId !== currentUserId &&
+      !classDetail.teachers.some((teacher) => teacher.id === currentUserId) &&
+      !classDetail.students.some((student) => student.id === currentUserId)
+    ) {
+      throw new ForbiddenException("You don't have permission to access");
+    }
+
+    const invitation = await this.invitationRepository.findOne({
+      where: { classId },
+    });
+
+    if (!invitation) {
+      const newInvitation = new Invitation(
+        generateRandomString(11),
+        classDetail.ownerId,
+        null,
+        classId,
+        Role.STUDENT,
+      );
+      const newInvitationCode =
+        await this.invitationRepository.save(newInvitation);
+
+      return newInvitationCode.code;
+    }
+
+    return invitation.code;
   }
 }
