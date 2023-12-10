@@ -17,6 +17,10 @@ export const ClassEntity = new EntitySchema<Class>({
       length: 100,
       nullable: true,
     },
+    ownerId: {
+      type: Number,
+      name: 'owner_id',
+    },
   },
   orderBy: {
     createdAt: 'ASC',
@@ -35,6 +39,13 @@ export const ClassEntity = new EntitySchema<Class>({
       joinTable: true,
       cascade: true,
       inverseSide: 'studyingClasses',
+    },
+    ownerId: {
+      type: 'many-to-one',
+      target: 'User',
+      joinColumn: {
+        name: 'owner_id',
+      },
     },
   },
 });

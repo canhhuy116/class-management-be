@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import typeorm from 'config/typeorm';
 import { setEnvironment } from 'infrastructure/environments';
 import { AuthModule } from 'infrastructure/ioc/auth.module';
+import { ClassModule } from 'infrastructure/ioc/class.module';
 import { UsersModule } from 'infrastructure/ioc/user.module';
 import { HealthController } from 'infrastructure/terminus';
 
@@ -13,6 +14,7 @@ import { HealthController } from 'infrastructure/terminus';
   imports: [
     UsersModule,
     AuthModule,
+    ClassModule,
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,

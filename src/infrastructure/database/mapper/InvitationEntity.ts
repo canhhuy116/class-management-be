@@ -20,10 +20,15 @@ export const InvitationEntity = new EntitySchema<Invitation>({
       type: String,
       length: 100,
       name: 'invitee_email',
+      nullable: true,
     },
     classId: {
       type: Number,
       name: 'class_id',
+    },
+    role: {
+      type: String,
+      length: 100,
     },
   },
   orderBy: {

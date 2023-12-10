@@ -6,6 +6,8 @@ export class Class implements IEntity {
 
   name: string;
 
+  ownerId: number;
+
   description?: string;
 
   teachers?: User[];
@@ -16,8 +18,9 @@ export class Class implements IEntity {
 
   updatedAt?: Date;
 
-  constructor(name: string, description?: string) {
+  constructor(name: string, ownerId: number, description?: string) {
     this.name = name;
+    this.ownerId = ownerId;
     this.description = description;
   }
 
@@ -25,5 +28,21 @@ export class Class implements IEntity {
     if (!(entity instanceof Class)) return false;
 
     return this.id === entity.id;
+  }
+
+  addTeacher(teacher: User) {
+    if (!this.teachers) {
+      this.teachers = [];
+    }
+
+    this.teachers.push(teacher);
+  }
+
+  addStudent(student: User) {
+    if (!this.students) {
+      this.students = [];
+    }
+
+    this.students.push(student);
   }
 }

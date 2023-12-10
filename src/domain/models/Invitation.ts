@@ -1,4 +1,5 @@
 import { IEntity } from 'domain/shared/IEntity';
+import { Role } from './Role';
 
 export class Invitation implements IEntity {
   id?: number;
@@ -7,9 +8,11 @@ export class Invitation implements IEntity {
 
   inviterId: number;
 
-  inviteeEmail: string;
+  inviteeEmail?: string;
 
   classId: number;
+
+  role: Role;
 
   createdAt?: Date;
 
