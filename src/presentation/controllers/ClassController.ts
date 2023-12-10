@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
   Param,
+  Patch,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -153,6 +154,32 @@ export class ClassController {
     return new SuccessResponseDTO({
       message: 'Invitation code founded',
       metadata: { code: invitationCode },
+    });
+  }
+
+  @Patch(':code/join')
+  @ApiOperation({
+    summary: 'Join class by invitation code',
+  })
+  @ApiParam({
+    name: 'code',
+    type: String,
+    description: 'The invitation code',
+  })
+  @ApiOkResponse({ description: 'Joined class successfully!', type: String })
+  @ApiNotFoundResponse({
+    description: 'Class cannot be founded.',
+    type: NotFoundError,
+  })
+  async joinClass(
+    @Param('code') code: string,
+    @Request() req: RequestWithUser,
+  ): Promise<SuccessResponseDTO> {
+    await this.classUseCases.joinClass(code, req.user.userId);
+
+    return new SuccessResponseDTO({
+      message: 'Joined class successfully!',
+      metadata: null,
     });
   }
 }

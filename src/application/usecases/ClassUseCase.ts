@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IClassRepository } from 'application/ports/IClassRepository';
 import { IInvitationRepository } from 'application/ports/IInvitationRepository';
 import { IUsersRepository } from 'application/ports/IUserRepository';
+import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 import { Class } from 'domain/models/Class';
 import { Invitation } from 'domain/models/Invitation';
@@ -72,7 +73,7 @@ export class ClassUseCases {
     const classExists = await this.classRepository.findOne(classDetail.id);
 
     if (!classExists) {
-      throw new Error('Class not found');
+      throw new EntityNotFoundException('Class not found');
     }
 
     const result = await this.classRepository.update(
@@ -102,7 +103,7 @@ export class ClassUseCases {
     });
 
     if (!classDetail) {
-      throw new Error('Class not found');
+      throw new EntityNotFoundException('Class not found');
     }
 
     if (
@@ -125,7 +126,7 @@ export class ClassUseCases {
     });
 
     if (!classDetail) {
-      throw new Error('Class not found');
+      throw new EntityNotFoundException('Class not found');
     }
 
     if (
@@ -155,5 +156,50 @@ export class ClassUseCases {
     }
 
     return invitation.code;
+  }
+
+  async joinClass(invitationCode: string, currentUserId: number) {
+    this.logger.log(`Joining class with invitation code: ${invitationCode}`);
+
+    const invitation = await this.invitationRepository.findOne({
+      where: { code: invitationCode },
+    });
+
+    if (!invitation) {
+      throw new EntityNotFoundException('Invitation code not found');
+    }
+
+    if (invitation.inviteeEmail !== null) {
+      throw new EntityNotFoundException('Invitation code not found');
+    }
+
+    const findClass = await this.classRepository.findOne({
+      where: { id: invitation.classId },
+      relations: ['teachers', 'students'],
+    });
+
+    if (!findClass) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    if (
+      findClass.ownerId === currentUserId ||
+      findClass.teachers.some((teacher) => teacher.id === currentUserId) ||
+      findClass.students.some((student) => student.id === currentUserId)
+    ) {
+      throw new EntityAlreadyExistException('You already joined this class');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: currentUserId },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    findClass.addStudent(user);
+
+    await this.classRepository.save(findClass);
   }
 }

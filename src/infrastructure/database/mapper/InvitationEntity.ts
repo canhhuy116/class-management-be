@@ -50,4 +50,11 @@ export const InvitationEntity = new EntitySchema<Invitation>({
       },
     },
   },
+  indices: [
+    {
+      name: 'IDX_INVITATION_CODE',
+      unique: true,
+      columns: ['code'],
+    },
+  ],
 });
