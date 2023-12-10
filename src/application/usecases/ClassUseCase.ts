@@ -1,6 +1,8 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { IClassRepository } from 'application/ports/IClassRepository';
 import { IInvitationRepository } from 'application/ports/IInvitationRepository';
+import { IMailService } from 'application/ports/IMailService';
 import { IUsersRepository } from 'application/ports/IUserRepository';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
@@ -17,6 +19,8 @@ export class ClassUseCases {
     private readonly classRepository: IClassRepository,
     private readonly userRepository: IUsersRepository,
     private readonly invitationRepository: IInvitationRepository,
+    private readonly mailService: IMailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getClasses(currentUserId: number): Promise<Class[]> {
@@ -201,5 +205,70 @@ export class ClassUseCases {
     findClass.addStudent(user);
 
     await this.classRepository.save(findClass);
+  }
+
+  async inviteTeacher(classId: number, currentUserId: number, email: string) {
+    this.logger.log(`Invite teacher to class: ${classId}`);
+
+    const classDetail = await this.classRepository.findOne({
+      where: { id: classId },
+      relations: ['teachers', 'students'],
+    });
+
+    if (!classDetail) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    if (
+      classDetail.ownerId !== currentUserId &&
+      !classDetail.teachers.some((teacher) => teacher.id === currentUserId)
+    ) {
+      throw new ForbiddenException(
+        "You don't have permission to invite teacher to this class",
+      );
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (
+      user &&
+      (classDetail.teachers.some((teacher) => teacher.id === user.id) ||
+        classDetail.students.some((student) => student.id === user.id))
+    ) {
+      throw new EntityAlreadyExistException(
+        'This user already joined this class',
+      );
+    }
+
+    const invitation = await this.invitationRepository.findOne({
+      where: { classId, inviteeEmail: email },
+    });
+
+    if (invitation) {
+      throw new EntityAlreadyExistException(
+        'This user already invited to this class',
+      );
+    }
+
+    const newInvitation = new Invitation(
+      generateRandomString(11),
+      currentUserId,
+      email,
+      classId,
+      Role.TEACHER,
+    );
+
+    await this.invitationRepository.save(newInvitation);
+
+    const classUrl = `${this.configService.get(
+      'FRONTEND_URL',
+    )}/class/join?code=${newInvitation.code}`;
+
+    const bodyMessage = `You have been invited to join the class ${classDetail.name}. Please click the link below to join the class:\n\n${classUrl}\n\nThanks`;
+
+    // side effect so we don't need to wait for it
+    this.mailService.sendMail(email, 'Invitation to join class', bodyMessage);
   }
 }

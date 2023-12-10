@@ -7,9 +7,11 @@ import { ClassRepository } from 'infrastructure/database/repository/ClassReposit
 import { InvitationRepository } from 'infrastructure/database/repository/InvitationRepository';
 import { UsersRepository } from 'infrastructure/database/repository/UserRepository';
 import { ClassController } from 'presentation/controllers/ClassController';
+import { MailModule } from './mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [],
+  imports: [MailModule, ConfigModule],
   controllers: [ClassController],
   providers: [
     ClassUseCases,

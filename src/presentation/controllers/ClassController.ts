@@ -6,7 +6,6 @@ import {
   UseGuards,
   Request,
   Param,
-  Patch,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -27,6 +26,7 @@ import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
 import { ClassVM } from 'presentation/view-model/classes/ClassVM';
 import { CreateClassVM } from 'presentation/view-model/classes/CreateClassVM';
+import { InvitePeopleIntoClassVM } from 'presentation/view-model/classes/InvitePeopleIntoClassVM';
 import { TeacherAndStudentVM } from 'presentation/view-model/classes/TeacherAndStudentVM';
 import { NotFoundError } from 'rxjs';
 
@@ -157,7 +157,7 @@ export class ClassController {
     });
   }
 
-  @Patch(':code/join')
+  @Get(':code/join')
   @ApiOperation({
     summary: 'Join class by invitation code',
   })
@@ -179,6 +179,41 @@ export class ClassController {
 
     return new SuccessResponseDTO({
       message: 'Joined class successfully!',
+      metadata: null,
+    });
+  }
+
+  @Post(':id/teachers')
+  @ApiOperation({
+    summary: 'Invite teacher to class',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The class id',
+  })
+  @ApiCreatedResponse({ description: 'Teacher invited.' })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while inviting teacher',
+    type: UnprocessableEntityError,
+  })
+  async inviteTeacher(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+    @Body() teacherEmail: InvitePeopleIntoClassVM,
+  ): Promise<SuccessResponseDTO> {
+    await this.classUseCases.inviteTeacher(
+      parseInt(id, 10),
+      req.user.userId,
+      teacherEmail.email,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Teacher invited successfully!',
       metadata: null,
     });
   }
