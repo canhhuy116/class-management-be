@@ -173,10 +173,6 @@ export class ClassUseCases {
       throw new EntityNotFoundException('Invitation code not found');
     }
 
-    if (invitation.inviteeEmail !== null) {
-      throw new EntityNotFoundException('Invitation code not found');
-    }
-
     const findClass = await this.classRepository.findOne({
       where: { id: invitation.classId },
       relations: ['teachers', 'students'],
@@ -194,15 +190,25 @@ export class ClassUseCases {
       throw new EntityAlreadyExistException('You already joined this class');
     }
 
-    const user = await this.userRepository.findOne({
+    const currentUser = await this.userRepository.findOne({
       where: { id: currentUserId },
     });
 
-    if (!user) {
-      throw new Error('User not found');
-    }
+    if (invitation.inviteeEmail !== null) {
+      if (currentUser.email !== invitation.inviteeEmail) {
+        throw new ForbiddenException(
+          'This invitation code is not for you. Please ask the owner to send you the invitation code',
+        );
+      }
 
-    findClass.addStudent(user);
+      const isInviteStudent = invitation.role === Role.STUDENT;
+
+      isInviteStudent
+        ? findClass.addStudent(currentUser)
+        : findClass.addTeacher(currentUser);
+    } else {
+      findClass.addStudent(currentUser);
+    }
 
     await this.classRepository.save(findClass);
   }
@@ -273,8 +279,7 @@ export class ClassUseCases {
 
     const bodyMessage = `You have been invited to join the class ${classDetail.name}. Please click the link below to join the class:\n\n${classUrl}\n\nThanks`;
 
-    // side effect so we don't need to wait for it
-    this.mailService.sendMail(
+    await this.mailService.sendMail(
       email,
       `Invitation to join class as ${role.toLowerCase()}`,
       bodyMessage,
