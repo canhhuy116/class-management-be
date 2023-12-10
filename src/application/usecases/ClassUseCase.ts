@@ -207,8 +207,13 @@ export class ClassUseCases {
     await this.classRepository.save(findClass);
   }
 
-  async inviteTeacher(classId: number, currentUserId: number, email: string) {
-    this.logger.log(`Invite teacher to class: ${classId}`);
+  async inviteToClass(
+    classId: number,
+    currentUserId: number,
+    email: string,
+    role: Role,
+  ) {
+    this.logger.log(`Invite ${role.toLowerCase()} to class: ${classId}`);
 
     const classDetail = await this.classRepository.findOne({
       where: { id: classId },
@@ -224,7 +229,7 @@ export class ClassUseCases {
       !classDetail.teachers.some((teacher) => teacher.id === currentUserId)
     ) {
       throw new ForbiddenException(
-        "You don't have permission to invite teacher to this class",
+        `You don't have permission to invite ${role.toLowerCase()} to this class`,
       );
     }
 
@@ -257,7 +262,7 @@ export class ClassUseCases {
       currentUserId,
       email,
       classId,
-      Role.TEACHER,
+      role,
     );
 
     await this.invitationRepository.save(newInvitation);
@@ -269,6 +274,10 @@ export class ClassUseCases {
     const bodyMessage = `You have been invited to join the class ${classDetail.name}. Please click the link below to join the class:\n\n${classUrl}\n\nThanks`;
 
     // side effect so we don't need to wait for it
-    this.mailService.sendMail(email, 'Invitation to join class', bodyMessage);
+    this.mailService.sendMail(
+      email,
+      `Invitation to join class as ${role.toLowerCase()}`,
+      bodyMessage,
+    );
   }
 }

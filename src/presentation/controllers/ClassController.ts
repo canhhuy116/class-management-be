@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { ClassUseCases } from 'application/usecases/ClassUseCase';
+import { Role } from 'domain/models/Role';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
@@ -206,14 +207,51 @@ export class ClassController {
     @Request() req: RequestWithUser,
     @Body() teacherEmail: InvitePeopleIntoClassVM,
   ): Promise<SuccessResponseDTO> {
-    await this.classUseCases.inviteTeacher(
+    await this.classUseCases.inviteToClass(
       parseInt(id, 10),
       req.user.userId,
       teacherEmail.email,
+      Role.TEACHER,
     );
 
     return new SuccessResponseDTO({
       message: 'Teacher invited successfully!',
+      metadata: null,
+    });
+  }
+
+  @Post(':id/students')
+  @ApiOperation({
+    summary: 'Invite student to class',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The class id',
+  })
+  @ApiCreatedResponse({ description: 'Student invited.' })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while inviting student',
+    type: UnprocessableEntityError,
+  })
+  async inviteStudent(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+    @Body() studentEmail: InvitePeopleIntoClassVM,
+  ): Promise<SuccessResponseDTO> {
+    await this.classUseCases.inviteToClass(
+      parseInt(id, 10),
+      req.user.userId,
+      studentEmail.email,
+      Role.STUDENT,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Student invited successfully!',
       metadata: null,
     });
   }
