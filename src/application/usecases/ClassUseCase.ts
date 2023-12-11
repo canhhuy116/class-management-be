@@ -213,6 +213,8 @@ export class ClassUseCases {
     }
 
     await this.classRepository.save(findClass);
+
+    return findClass;
   }
 
   async inviteToClass(

@@ -176,11 +176,11 @@ export class ClassController {
     @Param('code') code: string,
     @Request() req: RequestWithUser,
   ): Promise<SuccessResponseDTO> {
-    await this.classUseCases.joinClass(code, req.user.userId);
+    const classJoin = await this.classUseCases.joinClass(code, req.user.userId);
 
     return new SuccessResponseDTO({
       message: 'Joined class successfully!',
-      metadata: null,
+      metadata: ClassVM.toViewModel(classJoin),
     });
   }
 
