@@ -61,7 +61,7 @@ export class ClassUseCases {
     return classDetail;
   }
 
-  async createClass(classDetail: Class): Promise<void> {
+  async createClass(classDetail: Class): Promise<Class> {
     this.logger.log(`Saving a class`);
     const owner = await this.userRepository.findOne({
       where: { id: classDetail.ownerId },
@@ -69,7 +69,9 @@ export class ClassUseCases {
 
     classDetail.addTeacher(owner);
 
-    await this.classRepository.save(classDetail);
+    const newClass = await this.classRepository.save(classDetail);
+
+    return newClass;
   }
 
   async updateClass(classDetail: Class): Promise<boolean> {

@@ -124,13 +124,13 @@ export class ClassController {
     @Request() req: RequestWithUser,
     @Body() createClass: CreateClassVM,
   ): Promise<SuccessResponseDTO> {
-    await this.classUseCases.createClass(
+    const newClass = await this.classUseCases.createClass(
       CreateClassVM.fromViewModel(createClass, req.user.userId),
     );
 
     return new SuccessResponseDTO({
       message: 'Class created successfully!',
-      metadata: null,
+      metadata: ClassVM.toViewModel(newClass),
     });
   }
 
