@@ -137,8 +137,7 @@ export class ClassUseCases {
 
     if (
       classDetail.ownerId !== currentUserId &&
-      !classDetail.teachers.some((teacher) => teacher.id === currentUserId) &&
-      !classDetail.students.some((student) => student.id === currentUserId)
+      !classDetail.teachers.some((teacher) => teacher.id === currentUserId)
     ) {
       throw new ForbiddenException("You don't have permission to access");
     }
