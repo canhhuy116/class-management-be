@@ -11,6 +11,9 @@ before_script:
 
 build:
   stage: build
+  image: docker:latest
+  services:
+    - docker:dind
   script:
     - docker build -t $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG .
     - docker push $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG
@@ -22,6 +25,8 @@ deploy:
   before_script:
     - chmod 400 $SSH_KEY
   script:
-    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY $VM_USER@$VM_IP 'docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CONTAINER_REGISTRY && docker pull $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker run -d -p 8080:8080 $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker rmi $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG'
+    - bash gen-env.sh
+    - scp -o StrictHostKeyChecking=no -i $SSH_KEY .env $VM_USER@$VM_IP:/home/$VM_USER
+    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY $VM_USER@$VM_IP 'docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CONTAINER_REGISTRY && docker pull $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker run -d --env-file /home/$VM_USER/.env -p 8080:8080 $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker rmi $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker logout $CONTAINER_REGISTRY && rm /home/$VM_USER/.env'
   only:
     - main
