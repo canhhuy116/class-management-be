@@ -27,7 +27,7 @@ deploy:
   script:
     - bash gen-env.sh
     - scp -o StrictHostKeyChecking=no -i $SSH_KEY .env $VM_USER@$VM_IP:/home/$VM_USER
-    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY $VM_USER@$VM_IP "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CONTAINER_REGISTRY && docker pull $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker run -d --name class-management-app --network my-net --env-file /home/$VM_USER/.env -e VIRTUAL_HOST=$VIRTUAL_HOST -e LETSENCRYPT_HOST=$LETSENCRYPT_HOST -e LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL -p 8080:8080 $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker logout $CONTAINER_REGISTRY && rm /home/$VM_USER/.env"
+    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY $VM_USER@$VM_IP "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CONTAINER_REGISTRY && docker pull $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG docker stop class-management-app || true && docker rm class-management-app || true && docker run -d --name class-management-app --network my-net --env-file /home/$VM_USER/.env -e VIRTUAL_HOST=$VIRTUAL_HOST -e LETSENCRYPT_HOST=$LETSENCRYPT_HOST -e LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL -p 8080:8080 $CONTAINER_REGISTRY/$CI_PROJECT_PATH:$IMAGE_TAG && docker logout $CONTAINER_REGISTRY && rm /home/$VM_USER/.env"
     - ssh -o StrictHostKeyChecking=no -i $SSH_KEY $VM_USER@$VM_IP "docker image prune -f"
   only:
     - main
