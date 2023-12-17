@@ -73,7 +73,7 @@ export class UsersController {
     return UserVM.toViewModel(newUser);
   }
 
-  @Get('/test')
+  @Get('/test/ci-cd')
   @ApiOperation({
     summary: 'Test route',
   })
