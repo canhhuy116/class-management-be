@@ -79,6 +79,6 @@ export class UsersController {
   })
   @ApiOkResponse({ description: 'Test route.' })
   async test() {
-    return 'test';
+    return 'test 123';
   }
 }
