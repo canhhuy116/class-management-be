@@ -72,4 +72,13 @@ export class UsersController {
 
     return UserVM.toViewModel(newUser);
   }
+
+  @Get('/test')
+  @ApiOperation({
+    summary: 'Test route',
+  })
+  @ApiOkResponse({ description: 'Test route.' })
+  async test() {
+    return 'test';
+  }
 }
