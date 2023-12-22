@@ -1,33 +1,24 @@
-import { IEntity } from 'domain/shared/IEntity';
 import { User } from './User';
+import { BaseModel } from './BaseModel';
+import { ClassTeacher } from './ClassTeacher';
+import { ClassStudent } from './ClassStudent';
 
-export class Class implements IEntity {
-  id?: number;
-
+export class Class extends BaseModel {
   name: string;
 
   ownerId: number;
 
   description?: string;
 
-  teachers?: User[];
+  teachers?: ClassTeacher[];
 
-  students?: User[];
-
-  createdAt?: Date;
-
-  updatedAt?: Date;
+  students?: ClassStudent[];
 
   constructor(name: string, ownerId: number, description?: string) {
+    super();
     this.name = name;
     this.ownerId = ownerId;
     this.description = description;
-  }
-
-  equals(entity: IEntity) {
-    if (!(entity instanceof Class)) return false;
-
-    return this.id === entity.id;
   }
 
   addTeacher(teacher: User) {
@@ -35,14 +26,46 @@ export class Class implements IEntity {
       this.teachers = [];
     }
 
-    this.teachers.push(teacher);
+    const classTeacher = new ClassTeacher(teacher);
+
+    this.teachers.push(classTeacher);
   }
 
-  addStudent(student: User) {
+  addStudent(student: User, studentId: string) {
     if (!this.students) {
       this.students = [];
     }
 
-    this.students.push(student);
+    const classStudent = new ClassStudent(this.id, student.id, studentId);
+
+    this.students.push(classStudent);
+  }
+
+  hasMember(userId: number): boolean {
+    if (this.ownerId === userId) {
+      return true;
+    }
+
+    if (
+      this.teachers?.some((classTeacher) => classTeacher.teacher.id === userId)
+    ) {
+      return true;
+    }
+
+    if (
+      this.students?.some((classStudent) => classStudent.student.id === userId)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  isOwner(userId: number): boolean {
+    return this.ownerId === userId;
+  }
+
+  isTeacher(userId: number): boolean {
+    return this.teachers?.some((teacher) => teacher.teacher.id === userId);
   }
 }

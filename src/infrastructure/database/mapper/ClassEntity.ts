@@ -1,6 +1,8 @@
 import { Class } from 'domain/models/Class';
 import { EntitySchema } from 'typeorm';
 import { BaseEntity } from './BaseEntity';
+import { ClassStudent } from 'domain/models/ClassStudent';
+import { ClassTeacher } from 'domain/models/ClassTeacher';
 
 export const ClassEntity = new EntitySchema<Class>({
   name: 'Class',
@@ -26,26 +28,24 @@ export const ClassEntity = new EntitySchema<Class>({
     createdAt: 'ASC',
   },
   relations: {
-    teachers: {
-      type: 'many-to-many',
-      target: 'User',
-      joinTable: true,
-      cascade: true,
-      inverseSide: 'teachingClasses',
-    },
-    students: {
-      type: 'many-to-many',
-      target: 'User',
-      joinTable: true,
-      cascade: true,
-      inverseSide: 'studyingClasses',
-    },
     ownerId: {
       type: 'many-to-one',
       target: 'User',
       joinColumn: {
         name: 'owner_id',
       },
+    },
+    students: {
+      type: 'one-to-many',
+      target: () => ClassStudent,
+      inverseSide: 'class',
+      cascade: true,
+    },
+    teachers: {
+      type: 'one-to-many',
+      target: () => ClassTeacher,
+      inverseSide: 'class',
+      cascade: true,
     },
   },
 });

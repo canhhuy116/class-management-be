@@ -25,7 +25,16 @@ export class UserVM {
   })
   email: string;
 
+  @Expose()
+  studentId?: string;
+
   static toViewModel(user: User): UserVM {
     return plainToClass(UserVM, user, { excludeExtraneousValues: true });
+  }
+
+  withStudentId(studentId: string): UserVM {
+    this.studentId = studentId;
+
+    return this;
   }
 }

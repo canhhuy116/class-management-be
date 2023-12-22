@@ -1,10 +1,8 @@
-import { IEntity } from '../shared/IEntity';
 import { hash } from 'bcrypt';
 import { DomainException } from '../exceptions/DomainException';
+import { BaseModel } from './BaseModel';
 
-export class User implements IEntity {
-  id?: number;
-
+export class User extends BaseModel {
   name: string;
 
   email: string;
@@ -23,10 +21,6 @@ export class User implements IEntity {
 
   isConfirmed?: boolean;
 
-  createdAt?: Date;
-
-  updatedAt?: Date;
-
   private static readonly SALT_ROUNDS = 10;
 
   constructor(
@@ -38,6 +32,7 @@ export class User implements IEntity {
     googleId?: string,
     facebookId?: string,
   ) {
+    super();
     this.name = name;
     this.email = email;
     this.password = password;
@@ -45,12 +40,6 @@ export class User implements IEntity {
     this.address = address;
     this.googleId = googleId;
     this.facebookId = facebookId;
-  }
-
-  equals(entity: IEntity) {
-    if (!(entity instanceof User)) return false;
-
-    return this.id === entity.id;
   }
 
   async hashPassword(password: string): Promise<void> {

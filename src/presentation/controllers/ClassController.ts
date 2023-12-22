@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
   Param,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -16,6 +17,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
@@ -167,6 +169,12 @@ export class ClassController {
     type: String,
     description: 'The invitation code',
   })
+  @ApiQuery({
+    name: 'studentId',
+    type: String,
+    required: false,
+    description: 'The student id',
+  })
   @ApiOkResponse({ description: 'Joined class successfully!', type: String })
   @ApiNotFoundResponse({
     description: 'Class cannot be founded.',
@@ -174,9 +182,14 @@ export class ClassController {
   })
   async joinClass(
     @Param('code') code: string,
+    @Query('studentId') studentId: string,
     @Request() req: RequestWithUser,
   ): Promise<SuccessResponseDTO> {
-    const classJoin = await this.classUseCases.joinClass(code, req.user.userId);
+    const classJoin = await this.classUseCases.joinClass(
+      code,
+      req.user.userId,
+      studentId,
+    );
 
     return new SuccessResponseDTO({
       message: 'Joined class successfully!',

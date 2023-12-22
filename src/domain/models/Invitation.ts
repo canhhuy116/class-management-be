@@ -1,9 +1,8 @@
 import { IEntity } from 'domain/shared/IEntity';
 import { Role } from './Role';
+import { BaseModel } from './BaseModel';
 
-export class Invitation implements IEntity {
-  id?: number;
-
+export class Invitation extends BaseModel {
   code: string;
 
   inviterId: number;
@@ -14,10 +13,6 @@ export class Invitation implements IEntity {
 
   role: Role;
 
-  createdAt?: Date;
-
-  updatedAt?: Date;
-
   constructor(
     code: string,
     inviterId: number,
@@ -25,16 +20,11 @@ export class Invitation implements IEntity {
     classId: number,
     role: Role,
   ) {
+    super();
     this.code = code;
     this.inviterId = inviterId;
     this.classId = classId;
     this.role = role;
     this.inviteeEmail = inviteeEmail;
-  }
-
-  equals(entity: IEntity) {
-    if (!(entity instanceof Invitation)) return false;
-
-    return this.id === entity.id;
   }
 }

@@ -61,8 +61,8 @@ export class ClassVM {
 
   static toViewModel(classEntity: Class): ClassVM {
     const owner = classEntity.teachers.find(
-      (teacher) => teacher.id === classEntity.ownerId,
-    );
+      (classTeacher) => classTeacher.teacher.id === classEntity.ownerId,
+    ).teacher;
     const ownerVM = UserVM.toViewModel(owner);
 
     const numberOfStudents = classEntity.students

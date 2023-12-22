@@ -9,6 +9,10 @@ import { UsersRepository } from 'infrastructure/database/repository/UserReposito
 import { ClassController } from 'presentation/controllers/ClassController';
 import { MailModule } from './mail.module';
 import { ConfigModule } from '@nestjs/config';
+import { IStudentRepository } from 'application/ports/IStudentRepository';
+import { StudentRepository } from 'infrastructure/database/repository/StudentRepository';
+import { ITeacherRepository } from 'application/ports/ITeacherRepository';
+import { TeacherRepository } from 'infrastructure/database/repository/TeacherRepository';
 
 @Module({
   imports: [MailModule, ConfigModule],
@@ -18,6 +22,8 @@ import { ConfigModule } from '@nestjs/config';
     { provide: IClassRepository, useClass: ClassRepository },
     { provide: IUsersRepository, useClass: UsersRepository },
     { provide: IInvitationRepository, useClass: InvitationRepository },
+    { provide: IStudentRepository, useClass: StudentRepository },
+    { provide: ITeacherRepository, useClass: TeacherRepository },
   ],
 })
 export class ClassModule {}

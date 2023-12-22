@@ -33,8 +33,12 @@ export class TeacherAndStudentVM {
   static toViewModel(classEntity: Class): TeacherAndStudentVM {
     const { teachers, students, ...classDetail } = classEntity;
 
-    const teachersVM = teachers.map((teacher) => UserVM.toViewModel(teacher));
-    const studentsVM = students.map((student) => UserVM.toViewModel(student));
+    const teachersVM = teachers.map((teacher) =>
+      UserVM.toViewModel(teacher.teacher),
+    );
+    const studentsVM = students.map((student) =>
+      UserVM.toViewModel(student.student).withStudentId(student.studentId),
+    );
 
     return plainToClass(
       TeacherAndStudentVM,

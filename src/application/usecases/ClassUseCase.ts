@@ -26,15 +26,12 @@ export class ClassUseCases {
   async getClasses(currentUserId: number): Promise<Class[]> {
     this.logger.log('Find all classes');
 
-    const classes: Class[] = await this.classRepository.find({
-      relations: ['teachers', 'students'],
+    const classes = await this.classRepository.find({
+      relations: ['teachers.teacher', 'students.student'],
     });
 
-    return classes.filter(
-      (classEntity) =>
-        classEntity.ownerId === currentUserId ||
-        classEntity.teachers.some((teacher) => teacher.id === currentUserId) ||
-        classEntity.students.some((student) => student.id === currentUserId),
+    return classes.filter((classEntity) =>
+      classEntity.hasMember(currentUserId),
     );
   }
 
@@ -43,18 +40,14 @@ export class ClassUseCases {
 
     const classDetail = await this.classRepository.findOne({
       where: { id },
-      relations: ['teachers', 'students'],
+      relations: ['teachers.teacher', 'students.student'],
     });
 
     if (!classDetail) {
       throw new EntityNotFoundException('Class not found');
     }
 
-    if (
-      classDetail.ownerId !== currentUserId &&
-      !classDetail.teachers.some((teacher) => teacher.id === currentUserId) &&
-      !classDetail.students.some((student) => student.id === currentUserId)
-    ) {
+    if (!classDetail.hasMember(currentUserId)) {
       throw new ForbiddenException("You don't have permission to access");
     }
 
@@ -105,18 +98,14 @@ export class ClassUseCases {
 
     const classDetail = await this.classRepository.findOne({
       where: { id },
-      relations: ['teachers', 'students'],
+      relations: ['teachers.teacher', 'students.student'],
     });
 
     if (!classDetail) {
       throw new EntityNotFoundException('Class not found');
     }
 
-    if (
-      classDetail.ownerId !== currentUserId &&
-      !classDetail.teachers.some((teacher) => teacher.id === currentUserId) &&
-      !classDetail.students.some((student) => student.id === currentUserId)
-    ) {
+    if (!classDetail.hasMember(currentUserId)) {
       throw new ForbiddenException("You don't have permission to access");
     }
 
@@ -128,7 +117,7 @@ export class ClassUseCases {
 
     const classDetail = await this.classRepository.findOne({
       where: { id: classId },
-      relations: ['teachers', 'students'],
+      relations: ['teachers.teacher', 'students.student'],
     });
 
     if (!classDetail) {
@@ -136,8 +125,8 @@ export class ClassUseCases {
     }
 
     if (
-      classDetail.ownerId !== currentUserId &&
-      !classDetail.teachers.some((teacher) => teacher.id === currentUserId)
+      !classDetail.isOwner(currentUserId) &&
+      !classDetail.isTeacher(currentUserId)
     ) {
       throw new ForbiddenException("You don't have permission to access");
     }
@@ -163,7 +152,11 @@ export class ClassUseCases {
     return invitation.code;
   }
 
-  async joinClass(invitationCode: string, currentUserId: number) {
+  async joinClass(
+    invitationCode: string,
+    currentUserId: number,
+    studentId: string,
+  ) {
     this.logger.log(`Joining class with invitation code: ${invitationCode}`);
 
     const invitation = await this.invitationRepository.findOne({
@@ -176,18 +169,14 @@ export class ClassUseCases {
 
     const findClass = await this.classRepository.findOne({
       where: { id: invitation.classId },
-      relations: ['teachers', 'students'],
+      relations: ['teachers.teacher', 'students.student'],
     });
 
     if (!findClass) {
       throw new EntityNotFoundException('Class not found');
     }
 
-    if (
-      findClass.ownerId === currentUserId ||
-      findClass.teachers.some((teacher) => teacher.id === currentUserId) ||
-      findClass.students.some((student) => student.id === currentUserId)
-    ) {
+    if (findClass.hasMember(currentUserId)) {
       throw new EntityAlreadyExistException('You already joined this class');
     }
 
@@ -195,20 +184,26 @@ export class ClassUseCases {
       where: { id: currentUserId },
     });
 
-    if (invitation.inviteeEmail !== null) {
-      if (currentUser.email !== invitation.inviteeEmail) {
-        throw new ForbiddenException(
-          'This invitation code is not for you. Please ask the owner to send you the invitation code',
-        );
-      }
+    if (invitation.role === Role.STUDENT && !studentId) {
+      throw new ForbiddenException(
+        'Student ID is required to join as a student',
+      );
+    }
 
-      const isInviteStudent = invitation.role === Role.STUDENT;
+    if (
+      invitation.inviteeEmail &&
+      invitation.inviteeEmail !== currentUser.email
+    ) {
+      throw new ForbiddenException(
+        'This invitation code is not for you. Please ask the owner to send you the invitation code',
+      );
+    }
 
-      isInviteStudent
-        ? findClass.addStudent(currentUser)
-        : findClass.addTeacher(currentUser);
+    if (invitation.role === Role.STUDENT) {
+      findClass.addStudent(currentUser, studentId);
+      await this.userRepository.save(currentUser);
     } else {
-      findClass.addStudent(currentUser);
+      findClass.addTeacher(currentUser);
     }
 
     await this.classRepository.save(findClass);
@@ -226,7 +221,7 @@ export class ClassUseCases {
 
     const classDetail = await this.classRepository.findOne({
       where: { id: classId },
-      relations: ['teachers', 'students'],
+      relations: ['teachers.teacher', 'students.student'],
     });
 
     if (!classDetail) {
@@ -234,8 +229,8 @@ export class ClassUseCases {
     }
 
     if (
-      classDetail.ownerId !== currentUserId &&
-      !classDetail.teachers.some((teacher) => teacher.id === currentUserId)
+      !classDetail.isOwner(currentUserId) &&
+      !classDetail.isTeacher(currentUserId)
     ) {
       throw new ForbiddenException(
         `You don't have permission to invite ${role.toLowerCase()} to this class`,
@@ -246,11 +241,7 @@ export class ClassUseCases {
       where: { email },
     });
 
-    if (
-      user &&
-      (classDetail.teachers.some((teacher) => teacher.id === user.id) ||
-        classDetail.students.some((student) => student.id === user.id))
-    ) {
+    if (classDetail.hasMember(user.id)) {
       throw new EntityAlreadyExistException(
         'This user already joined this class',
       );
