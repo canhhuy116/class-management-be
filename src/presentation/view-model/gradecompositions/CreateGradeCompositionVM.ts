@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { GradeComposition } from 'domain/models/GradeComposition';
 
-export class CreateGradeCompositionVM {
+export class UpsertGradeCompositionVM {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -19,10 +19,7 @@ export class CreateGradeCompositionVM {
   })
   weight: number;
 
-  static fromViewModel(
-    vm: CreateGradeCompositionVM,
-    classId: number,
-  ): GradeComposition {
-    return new GradeComposition(vm.name, vm.weight, classId);
+  static fromViewModel(vm: UpsertGradeCompositionVM): GradeComposition {
+    return new GradeComposition(vm.name, vm.weight);
   }
 }

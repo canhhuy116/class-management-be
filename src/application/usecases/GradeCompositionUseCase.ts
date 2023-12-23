@@ -19,12 +19,6 @@ export class GradeCompositionUseCase {
     let count = 1;
     for (const gradeComposition of gradeCompositions) {
       const classId = gradeComposition.classId;
-      const classEntity = await this.classRepository.findOne({
-        where: { id: classId },
-      });
-      if (!classEntity) {
-        throw new EntityNotFoundException('Class not found');
-      }
 
       const gradeCompositionOfClass =
         await this.gradeCompositionRepository.find({
@@ -57,5 +51,101 @@ export class GradeCompositionUseCase {
     });
 
     return gradeComposition;
+  }
+
+  async updateGradeComposition(
+    gradeCompositionId: number,
+    gradeComposition: GradeComposition,
+    currentClassId: number,
+  ) {
+    this.logger.log(`Updating grade composition`);
+
+    const findGradeComposition = await this.gradeCompositionRepository.findOne({
+      where: { id: gradeCompositionId },
+    });
+
+    if (!findGradeComposition) {
+      throw new EntityNotFoundException('Grade composition not found');
+    }
+
+    if (findGradeComposition.classId != currentClassId) {
+      throw new ForbiddenException("You don't have permission to access");
+    }
+
+    findGradeComposition.name = gradeComposition.name;
+    findGradeComposition.weight = gradeComposition.weight;
+
+    await this.gradeCompositionRepository.save(findGradeComposition);
+  }
+
+  async deleteGradeComposition(
+    gradeCompositionId: number,
+    currentClassId: number,
+  ) {
+    this.logger.log(`Deleting grade composition`);
+
+    const findGradeComposition = await this.gradeCompositionRepository.findOne({
+      where: { id: gradeCompositionId },
+    });
+
+    if (!findGradeComposition) {
+      throw new EntityNotFoundException('Grade composition not found');
+    }
+
+    if (findGradeComposition.classId != currentClassId) {
+      throw new ForbiddenException("You don't have permission to access");
+    }
+
+    await this.gradeCompositionRepository.delete(gradeCompositionId);
+
+    const gradeCompositionOfClass = await this.gradeCompositionRepository.find({
+      where: { classId: currentClassId },
+    });
+
+    let count = 1;
+    for (const gradeComposition of gradeCompositionOfClass) {
+      gradeComposition.priority = count;
+      count++;
+    }
+
+    await this.gradeCompositionRepository.save(gradeCompositionOfClass);
+  }
+
+  async arrangeGradeComposition(
+    gradeCompositionIds: number[],
+    currentClassId: number,
+  ) {
+    this.logger.log(`Arranging grade composition`);
+
+    const gradeCompositionOfClass = await this.gradeCompositionRepository.find({
+      where: { classId: currentClassId },
+    });
+
+    if (gradeCompositionOfClass.length !== gradeCompositionIds.length) {
+      throw new EntityNotFoundException('Grade composition not found');
+    }
+
+    let count = 1;
+    const gradeCompositions = [];
+    for (const gradeCompositionId of gradeCompositionIds) {
+      const findGradeComposition =
+        await this.gradeCompositionRepository.findOne({
+          where: { id: gradeCompositionId },
+        });
+
+      if (!findGradeComposition) {
+        throw new EntityNotFoundException('Grade composition not found');
+      }
+
+      if (findGradeComposition.classId != currentClassId) {
+        throw new ForbiddenException("You don't have permission to access");
+      }
+
+      findGradeComposition.priority = count;
+      count++;
+
+      gradeCompositions.push(findGradeComposition);
+    }
+    await this.gradeCompositionRepository.save(gradeCompositions);
   }
 }

@@ -7,11 +7,16 @@ export class GradeComposition extends BaseModel {
   priority: number;
   viewable: boolean;
 
-  constructor(name: string, weight: number, classId: number) {
+  constructor(name: string, weight: number) {
     super();
     this.name = name;
     this.weight = weight;
+  }
+
+  forClass(classId: number) {
     this.classId = classId;
+
+    return this;
   }
 
   enableView() {
