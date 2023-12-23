@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IClassRepository } from 'application/ports/IClassRepository';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
@@ -39,6 +39,18 @@ export class GradeCompositionUseCase {
 
   async showGradeComposition(classId: number) {
     this.logger.log(`Showing grade composition`);
+
+    const classEntity = await this.classRepository.findOne({
+      where: { id: classId },
+    });
+
+    if (!classEntity) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    if (!classEntity.hasMember(classId)) {
+      throw new ForbiddenException("You don't have permission to access");
+    }
 
     const gradeComposition = await this.gradeCompositionRepository.find({
       where: { classId },
