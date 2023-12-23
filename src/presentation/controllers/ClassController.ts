@@ -7,6 +7,7 @@ import {
   Request,
   Param,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -25,6 +26,7 @@ import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { ClassUseCases } from 'application/usecases/ClassUseCase';
 import { Role } from 'domain/models/Role';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
+import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
 import { ClassVM } from 'presentation/view-model/classes/ClassVM';
@@ -37,6 +39,7 @@ import { NotFoundError } from 'rxjs';
 @ApiTags('Class')
 @Controller('api/v1/class')
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(SuccessInterceptor)
 export class ClassController {
   constructor(private readonly classUseCases: ClassUseCases) {}
 

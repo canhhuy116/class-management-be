@@ -7,6 +7,7 @@ import typeorm from 'config/typeorm';
 import { setEnvironment } from 'infrastructure/environments';
 import { AuthModule } from 'infrastructure/ioc/auth.module';
 import { ClassModule } from 'infrastructure/ioc/class.module';
+import { GradeCompositionModule } from 'infrastructure/ioc/grade.composition.module';
 import { UsersModule } from 'infrastructure/ioc/user.module';
 import { HealthController } from 'infrastructure/terminus';
 
@@ -15,6 +16,7 @@ import { HealthController } from 'infrastructure/terminus';
     UsersModule,
     AuthModule,
     ClassModule,
+    GradeCompositionModule,
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,

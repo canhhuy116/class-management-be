@@ -68,4 +68,8 @@ export class Class extends BaseModel {
   isTeacher(userId: number): boolean {
     return this.teachers?.some((teacher) => teacher.teacher.id === userId);
   }
+
+  isStudent(userId: number): boolean {
+    return this.students?.some((student) => student.student.id === userId);
+  }
 }
