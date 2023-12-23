@@ -14,7 +14,11 @@ export class TeacherRoleGuard implements CanActivate {
     }
 
     const currentUserId = user.userId;
-    const currentClassId = parseInt(headers['class-id']);
+    const currentClassId = headers['class-id'];
+
+    if (!currentClassId || isNaN(+currentClassId)) {
+      return false;
+    }
 
     const currentClass = await this.classRepository.findOne({
       where: { id: currentClassId },

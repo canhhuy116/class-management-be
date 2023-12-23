@@ -8,6 +8,7 @@ import { setEnvironment } from 'infrastructure/environments';
 import { AuthModule } from 'infrastructure/ioc/auth.module';
 import { ClassModule } from 'infrastructure/ioc/class.module';
 import { GradeCompositionModule } from 'infrastructure/ioc/grade.composition.module';
+import { GradeManagementModule } from 'infrastructure/ioc/grade.management.module';
 import { UsersModule } from 'infrastructure/ioc/user.module';
 import { HealthController } from 'infrastructure/terminus';
 
@@ -17,6 +18,7 @@ import { HealthController } from 'infrastructure/terminus';
     AuthModule,
     ClassModule,
     GradeCompositionModule,
+    GradeManagementModule,
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
