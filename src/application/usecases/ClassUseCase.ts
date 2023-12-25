@@ -200,8 +200,18 @@ export class ClassUseCases {
     }
 
     if (invitation.role === Role.STUDENT) {
-      findClass.addStudent(currentUser, studentId);
-      await this.userRepository.save(currentUser);
+      const studentExists = findClass.findStudent(studentId);
+
+      if (studentExists) {
+        if (studentExists.userId) {
+          throw new EntityAlreadyExistException(
+            'This student already joined this class',
+          );
+        }
+        studentExists.userId = currentUser.id;
+      } else {
+        findClass.addStudent(currentUser, studentId);
+      }
     } else {
       findClass.addTeacher(currentUser);
     }

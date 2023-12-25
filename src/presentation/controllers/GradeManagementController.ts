@@ -1,12 +1,28 @@
 import { GradeManagementUseCase } from './../../application/usecases/GradeManagementUseCase';
-import { Controller, Get, Headers, Res, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Post,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { Response } from 'express';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 
@@ -28,11 +44,13 @@ export class GradeManagementController {
     description: 'Return the student list template as an Excel file',
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
   @UseGuards(TeacherRoleGuard)
-  async downloadStudentListTemplate(
-    @Res() res: Response,
-    @Headers('class-id') classId: number,
-  ) {
+  async downloadStudentListTemplate(@Res() res: Response) {
     const excelBuffer =
       await this.gradeManagementUseCases.downloadStudentListTemplate();
 
@@ -45,5 +63,50 @@ export class GradeManagementController {
       'attachment; filename=student-template.xlsx',
     );
     res.send(excelBuffer);
+  }
+
+  @Post('student-list-template')
+  @ApiOperation({
+    summary: 'Upload student list template',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Student list template',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(TeacherRoleGuard)
+  async uploadStudentListTemplate(
+    @Headers('class-id') classId: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    const buffer: Buffer = file.buffer;
+
+    await this.gradeManagementUseCases.uploadStudentListTemplate(
+      buffer,
+      classId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Upload student list template successfully',
+      metadata: {},
+    });
   }
 }

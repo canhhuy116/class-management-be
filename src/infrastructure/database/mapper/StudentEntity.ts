@@ -14,11 +14,18 @@ export const StudentEntity = new EntitySchema<ClassStudent>({
     },
     userId: {
       type: Number,
+      nullable: true,
       name: 'user_id',
     },
     studentId: {
       type: String,
+      nullable: true,
       name: 'student_id',
+    },
+    fullName: {
+      type: String,
+      nullable: true,
+      name: 'full_name',
     },
   },
   orderBy: {

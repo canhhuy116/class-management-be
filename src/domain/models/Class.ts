@@ -47,13 +47,13 @@ export class Class extends BaseModel {
     }
 
     if (
-      this.teachers?.some((classTeacher) => classTeacher.teacher.id === userId)
+      this.teachers?.some((classTeacher) => classTeacher.teacher?.id === userId)
     ) {
       return true;
     }
 
     if (
-      this.students?.some((classStudent) => classStudent.student.id === userId)
+      this.students?.some((classStudent) => classStudent.student?.id === userId)
     ) {
       return true;
     }
@@ -70,6 +70,10 @@ export class Class extends BaseModel {
   }
 
   isStudent(userId: number): boolean {
-    return this.students?.some((student) => student.student.id === userId);
+    return this.students?.some((student) => student.student?.id === userId);
+  }
+
+  findStudent(studentId: string): ClassStudent | undefined {
+    return this.students?.find((student) => student?.studentId === studentId);
   }
 }
