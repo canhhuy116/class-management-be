@@ -14,6 +14,8 @@ export class Class extends BaseModel {
 
   students?: ClassStudent[];
 
+  backgroundImage?: string;
+
   constructor(name: string, ownerId: number, description?: string) {
     super();
     this.name = name;

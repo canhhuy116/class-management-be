@@ -8,12 +8,19 @@ import {
   Param,
   Query,
   UseInterceptors,
+  BadRequestException,
+  UploadedFile,
+  Headers,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
+  ApiHeader,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -26,6 +33,7 @@ import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { ClassUseCases } from 'application/usecases/ClassUseCase';
 import { Role } from 'domain/models/Role';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
+import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
@@ -269,6 +277,46 @@ export class ClassController {
     return new SuccessResponseDTO({
       message: 'Student invited successfully!',
       metadata: null,
+    });
+  }
+
+  @Post(':id/upload-background')
+  @ApiOperation({
+    summary: 'Upload class background',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Student list template',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(TeacherRoleGuard)
+  async uploadBackground(
+    @Headers('class-id') classId: number,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SuccessResponseDTO> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    await this.classUseCases.uploadBackgroundImage(file, classId);
+
+    return new SuccessResponseDTO({
+      message: 'Background uploaded successfully!',
+      metadata: {},
     });
   }
 }

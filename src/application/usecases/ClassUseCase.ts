@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { IClassRepository } from 'application/ports/IClassRepository';
 import { IInvitationRepository } from 'application/ports/IInvitationRepository';
 import { IMailService } from 'application/ports/IMailService';
+import { IStorageService } from 'application/ports/IStorageService';
 import { IUsersRepository } from 'application/ports/IUserRepository';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
@@ -21,6 +22,7 @@ export class ClassUseCases {
     private readonly invitationRepository: IInvitationRepository,
     private readonly mailService: IMailService,
     private readonly configService: ConfigService,
+    private readonly storageService: IStorageService,
   ) {}
 
   async getClasses(currentUserId: number): Promise<Class[]> {
@@ -288,5 +290,23 @@ export class ClassUseCases {
       `Invitation to join class as ${role.toLowerCase()}`,
       bodyMessage,
     );
+  }
+
+  async uploadBackgroundImage(file: Express.Multer.File, classId: number) {
+    this.logger.log(`Upload background image to class: ${classId}`);
+
+    const classDetail = await this.classRepository.findOne({
+      where: { id: classId },
+    });
+
+    if (!classDetail) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    const uploadResult = await this.storageService.uploadFile(file, '');
+
+    classDetail.backgroundImage = uploadResult;
+
+    await this.classRepository.save(classDetail);
   }
 }

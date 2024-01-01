@@ -13,9 +13,10 @@ import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { StudentRepository } from 'infrastructure/database/repository/StudentRepository';
 import { ITeacherRepository } from 'application/ports/ITeacherRepository';
 import { TeacherRepository } from 'infrastructure/database/repository/TeacherRepository';
+import { StorageModule } from './storage.module';
 
 @Module({
-  imports: [MailModule, ConfigModule],
+  imports: [MailModule, ConfigModule, StorageModule],
   controllers: [ClassController],
   providers: [
     ClassUseCases,

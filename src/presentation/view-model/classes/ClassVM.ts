@@ -34,6 +34,13 @@ export class ClassVM {
 
   @Expose()
   @ApiProperty({
+    description: 'The background image of the class',
+    example: 'https://example.com/image.png',
+  })
+  backgroundImage?: string;
+
+  @Expose()
+  @ApiProperty({
     description: 'Number of students in the class',
     example: '1',
   })

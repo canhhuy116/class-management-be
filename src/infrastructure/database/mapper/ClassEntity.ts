@@ -23,6 +23,11 @@ export const ClassEntity = new EntitySchema<Class>({
       type: Number,
       name: 'owner_id',
     },
+    backgroundImage: {
+      type: String,
+      name: 'background_image',
+      nullable: true,
+    },
   },
   orderBy: {
     createdAt: 'ASC',
