@@ -23,6 +23,8 @@ export class User extends BaseModel {
 
   studentId?: string;
 
+  avatar?: string;
+
   private static readonly SALT_ROUNDS = 10;
 
   constructor(

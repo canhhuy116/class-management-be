@@ -1,4 +1,18 @@
-import { Controller, Param, Get, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Get,
+  Post,
+  Body,
+  Put,
+  UseGuards,
+  Request,
+  Patch,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiParam,
@@ -8,11 +22,16 @@ import {
   ApiBadRequestResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
+import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { UsersUseCases } from 'application/usecases/UserUseCase';
+import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
 import { CreateUserVM } from 'presentation/view-model/users/CreateUserVM';
+import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
 import { UserVM } from 'presentation/view-model/users/UserVM';
 import { NotFoundError } from 'rxjs';
 
@@ -80,5 +99,54 @@ export class UsersController {
   @ApiOkResponse({ description: 'Test route.' })
   async test() {
     return 'test 123';
+  }
+
+  @Put()
+  @ApiOperation({
+    summary: 'Updates an user',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  async updateUser(
+    @Request() req: RequestWithUser,
+    @Body() user: UpdateUserVM,
+  ): Promise<SuccessResponseDTO> {
+    user.id = req.user.userId;
+    await this.usersUseCases.updateUser(UpdateUserVM.fromViewModel(user));
+
+    return new SuccessResponseDTO({
+      message: 'User updated',
+      metadata: {},
+    });
+  }
+
+  @Patch('/avatar')
+  @ApiOperation({
+    summary: 'Updates an user avatar',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'The avatar of the user',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(AuthGuard('jwt'))
+  async updateUserAvatar(
+    @Request() req: RequestWithUser,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SuccessResponseDTO> {
+    await this.usersUseCases.updateAvatar(req.user.userId, file);
+
+    return new SuccessResponseDTO({
+      message: 'User updated',
+      metadata: {},
+    });
   }
 }

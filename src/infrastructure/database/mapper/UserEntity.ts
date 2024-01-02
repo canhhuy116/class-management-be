@@ -59,6 +59,10 @@ export const UserEntity = new EntitySchema<User>({
       length: 100,
       nullable: true,
     },
+    avatar: {
+      type: String,
+      nullable: true,
+    },
   },
   orderBy: {
     createdAt: 'ASC',
