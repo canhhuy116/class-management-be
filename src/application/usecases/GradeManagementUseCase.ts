@@ -99,4 +99,54 @@ export class GradeManagementUseCase {
 
     await this.assignmentRepository.save(assignment);
   }
+
+  async previewStudentGradeBoard(classId: number) {
+    this.logger.log(`Preview student grade board`);
+
+    const students = await this.studentRepository.find({
+      where: { classId },
+    });
+
+    const gradeCompositionInClass = await this.grandeCompositionRepository.find(
+      {
+        where: { classId },
+      },
+    );
+
+    const gradeBoard = [];
+    for (const gradeComposition of gradeCompositionInClass) {
+      const assignments = await this.assignmentRepository.find({
+        where: { gradeCompositionId: gradeComposition.id },
+      });
+
+      const gradeCompositionBoard = {
+        compositionName: gradeComposition.name,
+        compositionWeight: gradeComposition.weight,
+        assignmentsBoard: [],
+      };
+
+      const assignmentBoard = assignments.map((assignment) => {
+        return {
+          assignmentName: assignment.name,
+          maxScore: assignment.maxScore,
+        };
+      });
+
+      gradeCompositionBoard.assignmentsBoard = assignmentBoard;
+
+      gradeBoard.push(gradeCompositionBoard);
+    }
+
+    const studentList = students.map((student) => {
+      return {
+        studentId: student.studentId,
+        fullName: student.fullName,
+      };
+    });
+
+    return {
+      studentList,
+      gradeBoard,
+    };
+  }
 }

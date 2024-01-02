@@ -135,4 +135,24 @@ export class GradeManagementController {
       metadata: {},
     });
   }
+
+  @Get('/preview-student-grade-board')
+  @ApiOperation({
+    summary: 'Preview student grade board',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @UseGuards(TeacherRoleGuard)
+  async previewStudentGradeBoard(@Headers('class-id') classId: number) {
+    const studentGradeBoard =
+      await this.gradeManagementUseCases.previewStudentGradeBoard(classId);
+
+    return new SuccessResponseDTO({
+      message: 'Preview student grade board successfully',
+      metadata: studentGradeBoard,
+    });
+  }
 }
