@@ -21,6 +21,8 @@ export class User extends BaseModel {
 
   isConfirmed?: boolean;
 
+  studentId?: string;
+
   private static readonly SALT_ROUNDS = 10;
 
   constructor(
@@ -29,6 +31,7 @@ export class User extends BaseModel {
     password?: string,
     phoneNumber?: string,
     address?: string,
+    studentId?: string,
     googleId?: string,
     facebookId?: string,
   ) {
@@ -38,6 +41,7 @@ export class User extends BaseModel {
     this.password = password;
     this.phoneNumber = phoneNumber;
     this.address = address;
+    this.studentId = studentId;
     this.googleId = googleId;
     this.facebookId = facebookId;
   }

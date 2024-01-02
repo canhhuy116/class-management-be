@@ -186,6 +186,8 @@ export class ClassUseCases {
       where: { id: currentUserId },
     });
 
+    if (currentUser.studentId) studentId = currentUser.studentId;
+
     if (invitation.role === Role.STUDENT && !studentId) {
       throw new ForbiddenException(
         'Student ID is required to join as a student',
@@ -218,6 +220,8 @@ export class ClassUseCases {
       findClass.addTeacher(currentUser);
     }
 
+    currentUser.studentId = studentId;
+    await this.userRepository.save(currentUser);
     await this.classRepository.save(findClass);
 
     return findClass;

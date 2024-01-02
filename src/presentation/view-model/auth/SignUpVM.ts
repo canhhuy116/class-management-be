@@ -44,7 +44,22 @@ export class SignUpVM {
   })
   address?: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'The student ID of the user',
+    example: '123456',
+  })
+  studentId?: string;
+
   static fromViewModel(vm: SignUpVM): User {
-    return new User(vm.name, vm.email, vm.password, vm.phoneNumber, vm.address);
+    return new User(
+      vm.name,
+      vm.email,
+      vm.password,
+      vm.phoneNumber,
+      vm.address,
+      vm.studentId,
+    );
   }
 }

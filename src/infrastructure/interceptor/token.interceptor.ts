@@ -58,7 +58,14 @@ export class TokenInterceptor implements NestInterceptor {
 
         return new SuccessResponseDTO({
           message: 'User logged in successfully',
-          metadata: { token: token },
+          metadata: {
+            token: token,
+            user: {
+              id: user?.id,
+              name: user?.name,
+              email: user?.email,
+            },
+          },
         });
       }),
     );

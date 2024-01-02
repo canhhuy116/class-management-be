@@ -54,6 +54,11 @@ export const UserEntity = new EntitySchema<User>({
       default: false,
       name: 'is_confirmed',
     },
+    studentId: {
+      type: String,
+      length: 100,
+      nullable: true,
+    },
   },
   orderBy: {
     createdAt: 'ASC',

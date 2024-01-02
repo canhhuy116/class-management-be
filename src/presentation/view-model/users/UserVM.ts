@@ -25,7 +25,6 @@ export class UserVM {
   })
   email: string;
 
-  @Expose()
   studentId?: string;
 
   static toViewModel(user: User): UserVM {

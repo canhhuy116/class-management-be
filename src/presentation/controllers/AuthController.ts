@@ -9,7 +9,6 @@ import {
   Request,
   Put,
   Req,
-  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -33,7 +32,6 @@ import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { ResetPasswordVM } from 'presentation/view-model/auth/ResetPasswordVM';
 import { AuthGuard } from '@nestjs/passport';
 import { RequestWithFullUser } from 'infrastructure/guards/GoogleStrategy';
-import { Response } from 'express';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
