@@ -2,11 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IAssignmentRepository } from 'application/ports/IAssignmentRepository';
 import { IExcelService } from 'application/ports/IExcelService';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
+import { IGradeRepository } from 'application/ports/IGradeRepository';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
+import { InvalidValueException } from 'domain/exceptions/InvalidValueException';
 import { Assignment } from 'domain/models/Assignment';
 import { ClassStudent } from 'domain/models/ClassStudent';
+import { Grade } from 'domain/models/Grade';
+import { InputStudentGradeAssignmentVM } from 'presentation/view-model/grademanagement/InputGradeStudentAssignment';
 
 @Injectable()
 export class GradeManagementUseCase {
@@ -17,6 +21,7 @@ export class GradeManagementUseCase {
     private readonly studentRepository: IStudentRepository,
     private readonly grandeCompositionRepository: IGradeCompositionRepository,
     private readonly assignmentRepository: IAssignmentRepository,
+    private readonly gradeRepository: IGradeRepository,
   ) {}
 
   async downloadStudentListTemplate(): Promise<Buffer> {
@@ -120,6 +125,7 @@ export class GradeManagementUseCase {
       });
 
       const gradeCompositionBoard = {
+        compositionId: gradeComposition.id,
         compositionName: gradeComposition.name,
         compositionWeight: gradeComposition.weight,
         assignmentsBoard: [],
@@ -127,6 +133,7 @@ export class GradeManagementUseCase {
 
       const assignmentBoard = assignments.map((assignment) => {
         return {
+          assignmentId: assignment.id,
           assignmentName: assignment.name,
           maxScore: assignment.maxScore,
         };
@@ -148,5 +155,53 @@ export class GradeManagementUseCase {
       studentList,
       gradeBoard,
     };
+  }
+
+  async inputGradeStudentAssignment(
+    currentUserId: number,
+    classId: number,
+    input: Grade,
+  ) {
+    this.logger.log(`Input grade student assignment`);
+
+    const student = await this.studentRepository.findOne({
+      where: { studentId: input.studentId, classId },
+    });
+
+    if (!student) {
+      throw new EntityNotFoundException(
+        `The student ${input.studentId} has not found`,
+      );
+    }
+
+    const assignment = await this.assignmentRepository.findOne({
+      where: { id: input.assignmentId },
+    });
+
+    if (!assignment) {
+      throw new EntityNotFoundException(
+        `The assignment ${input.assignmentId} has not found`,
+      );
+    }
+
+    if (input.value > assignment.maxScore) {
+      throw new InvalidValueException(
+        `The score ${input.value} is greater than max score ${assignment.maxScore}`,
+      );
+    }
+
+    const findGrade = await this.gradeRepository.findOne({
+      where: { studentId: input.studentId, assignmentId: input.assignmentId },
+    });
+
+    if (findGrade) {
+      throw new EntityAlreadyExistException(
+        `The grade of student ${input.studentId} for assignment ${assignment.name} has already exist`,
+      );
+    }
+
+    input.byTeacher(currentUserId);
+
+    await this.gradeRepository.save(input);
   }
 }

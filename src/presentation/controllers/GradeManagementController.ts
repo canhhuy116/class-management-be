@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,8 +25,10 @@ import {
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { Response } from 'express';
+import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { UpsertAssignmentVM } from 'presentation/view-model/grademanagement/CreateAssignment';
+import { InputStudentGradeAssignmentVM } from 'presentation/view-model/grademanagement/InputGradeStudentAssignment';
 
 @ApiBearerAuth()
 @ApiTags('GradeManagement')
@@ -153,6 +156,33 @@ export class GradeManagementController {
     return new SuccessResponseDTO({
       message: 'Preview student grade board successfully',
       metadata: studentGradeBoard,
+    });
+  }
+
+  @Post('/input-grade-student-assignment')
+  @ApiOperation({
+    summary: 'Input grade student assignment',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @UseGuards(TeacherRoleGuard)
+  async inputGradeStudentAssignment(
+    @Request() req: RequestWithUser,
+    @Headers('class-id') classId: number,
+    @Body() body: InputStudentGradeAssignmentVM,
+  ) {
+    await this.gradeManagementUseCases.inputGradeStudentAssignment(
+      req.user.userId,
+      classId,
+      InputStudentGradeAssignmentVM.fromViewModel(body),
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Input grade student assignment successfully',
+      metadata: {},
     });
   }
 }
