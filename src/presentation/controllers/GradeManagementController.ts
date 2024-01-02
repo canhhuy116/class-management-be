@@ -25,6 +25,7 @@ import {
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { Response } from 'express';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
+import { UpsertAssignmentVM } from 'presentation/view-model/grademanagement/CreateAssignment';
 
 @ApiBearerAuth()
 @ApiTags('GradeManagement')
@@ -106,6 +107,31 @@ export class GradeManagementController {
 
     return new SuccessResponseDTO({
       message: 'Upload student list template successfully',
+      metadata: {},
+    });
+  }
+
+  @Post('assignment')
+  @ApiOperation({
+    summary: 'Create assignment',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @UseGuards(TeacherRoleGuard)
+  async createAssignment(
+    @Headers('class-id') classId: number,
+    @Body() assignment: UpsertAssignmentVM,
+  ) {
+    await this.gradeManagementUseCases.createAssignment(
+      classId,
+      UpsertAssignmentVM.fromViewModel(assignment),
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Create assignment successfully',
       metadata: {},
     });
   }

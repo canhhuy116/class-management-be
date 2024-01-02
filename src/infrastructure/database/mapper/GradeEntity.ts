@@ -15,9 +15,9 @@ export const GradeEntity = new EntitySchema<Grade>({
       type: Number,
       name: 'student_id',
     },
-    gradeCompositionId: {
+    assignmentId: {
       type: Number,
-      name: 'grade_composition_id',
+      name: 'assignment_id',
     },
     teacherId: {
       type: Number,
@@ -42,11 +42,11 @@ export const GradeEntity = new EntitySchema<Grade>({
         name: 'teacher_id',
       },
     },
-    gradeCompositionId: {
+    assignmentId: {
       type: 'many-to-one',
-      target: 'GradeComposition',
+      target: 'Assignment',
       joinColumn: {
-        name: 'grade_composition_id',
+        name: 'assignment_id',
       },
     },
   },
