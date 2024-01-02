@@ -313,4 +313,25 @@ export class ClassUseCases {
 
     await this.classRepository.save(classDetail);
   }
+
+  async getClassesWithRole(currentUserId: number) {
+    this.logger.log(`Get classes with role of user: ${currentUserId}`);
+
+    const classes = await this.classRepository.find({
+      relations: ['teachers.teacher', 'students.student'],
+    });
+
+    const classesWithStudentRole = classes.filter((classEntity) => {
+      return classEntity.isStudent(currentUserId);
+    });
+
+    const classesWithTeacherRole = classes.filter((classEntity) => {
+      return classEntity.isTeacher(currentUserId);
+    });
+
+    return {
+      studentClass: classesWithStudentRole,
+      teacherClass: classesWithTeacherRole,
+    };
+  }
 }

@@ -319,4 +319,26 @@ export class ClassController {
       metadata: {},
     });
   }
+
+  @Get('/context/class-with-role')
+  @ApiOperation({
+    summary: 'Get all classes with role of user',
+  })
+  async getClassesWithRole(@Request() req: RequestWithUser) {
+    const classes = await this.classUseCases.getClassesWithRole(
+      req.user.userId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Classes founded',
+      metadata: {
+        studentClass: classes.studentClass.map((classEntity) =>
+          ClassVM.toViewModel(classEntity),
+        ),
+        teacherClass: classes.teacherClass.map((classEntity) =>
+          ClassVM.toViewModel(classEntity),
+        ),
+      },
+    });
+  }
 }
