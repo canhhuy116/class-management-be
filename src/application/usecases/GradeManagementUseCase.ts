@@ -204,4 +204,53 @@ export class GradeManagementUseCase {
 
     await this.gradeRepository.save(input);
   }
+
+  async downloadGradeAssignmentTemplate(classId: number, assignmentId: number) {
+    this.logger.log(`Downloading grade assignment template`);
+
+    const assignment = await this.assignmentRepository.findOne({
+      where: { id: assignmentId },
+    });
+
+    if (!assignment) {
+      throw new EntityNotFoundException(
+        `The assignment ${assignmentId} has not found`,
+      );
+    }
+
+    const gradeComposition = await this.grandeCompositionRepository.findOne({
+      where: { id: assignment.gradeCompositionId },
+    });
+
+    if (!gradeComposition) {
+      throw new EntityNotFoundException(
+        `The grade composition ${assignment.gradeCompositionId} has not found`,
+      );
+    }
+
+    if (gradeComposition.classId != classId) {
+      throw new EntityNotFoundException(
+        `The grade composition ${assignment.gradeCompositionId} has not found in class ${classId}`,
+      );
+    }
+
+    const columns = ['Student ID', 'Grade'];
+
+    const students = await this.studentRepository.find({
+      where: { classId },
+    });
+
+    const studentIds = students
+      .filter((student) => student.studentId)
+      .map((student) => student.studentId);
+
+    const buffer = await this.excelService.generateExcelTemplate(
+      `Grade Assignment ${assignment.name}`,
+      columns,
+      studentIds,
+      0,
+    );
+
+    return buffer;
+  }
 }

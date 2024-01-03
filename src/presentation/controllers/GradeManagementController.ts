@@ -20,6 +20,7 @@ import {
   ApiConsumes,
   ApiHeader,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -184,5 +185,47 @@ export class GradeManagementController {
       message: 'Input grade student assignment successfully',
       metadata: {},
     });
+  }
+
+  @Get('grade-assignment-template')
+  @ApiOperation({
+    summary: 'Download grade assignment template',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the grade assignment template as an Excel file',
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'assignment-id',
+    description: 'Assignment ID',
+    required: true,
+  })
+  @UseGuards(TeacherRoleGuard)
+  async downloadGradeAssignmentTemplate(
+    @Res() res: Response,
+    @Headers('class-id') classId: number,
+    @Headers('assignment-id') assignmentId: number,
+  ) {
+    const excelBuffer =
+      await this.gradeManagementUseCases.downloadGradeAssignmentTemplate(
+        classId,
+        assignmentId,
+      );
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=grade-assignment-template.xlsx',
+    );
+    res.send(excelBuffer);
   }
 }

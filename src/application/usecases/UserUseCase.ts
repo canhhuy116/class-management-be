@@ -58,10 +58,7 @@ export class UsersUseCases {
     return result.affected > 0;
   }
 
-  async updateAvatar(
-    id: number,
-    avatar: Express.Multer.File,
-  ): Promise<boolean> {
+  async updateAvatar(id: number, avatar: Express.Multer.File) {
     this.logger.log(`Updating a user avatar: ${id}`);
     const userExists = await this.usersRepository.findOne({ where: { id } });
 
@@ -70,10 +67,10 @@ export class UsersUseCases {
 
     const uploadResult = await this.storageService.uploadFile(avatar, '');
 
-    const result = await this.usersRepository.update(id, {
+    await this.usersRepository.update(id, {
       avatar: uploadResult,
     });
 
-    return result.affected > 0;
+    return uploadResult;
   }
 }

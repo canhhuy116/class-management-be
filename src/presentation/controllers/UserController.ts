@@ -141,11 +141,14 @@ export class UsersController {
     @Request() req: RequestWithUser,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<SuccessResponseDTO> {
-    await this.usersUseCases.updateAvatar(req.user.userId, file);
+    const avatarUrl = await this.usersUseCases.updateAvatar(
+      req.user.userId,
+      file,
+    );
 
     return new SuccessResponseDTO({
       message: 'User updated',
-      metadata: {},
+      metadata: { avatar: avatarUrl },
     });
   }
 }
