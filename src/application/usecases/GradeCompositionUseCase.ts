@@ -31,7 +31,7 @@ export class GradeCompositionUseCase {
     this.gradeCompositionRepository.save(gradeCompositions);
   }
 
-  async showGradeComposition(classId: number) {
+  async showGradeComposition(classId: number, currentUserId: number) {
     this.logger.log(`Showing grade composition`);
 
     const classEntity = await this.classRepository.findOne({
@@ -42,7 +42,7 @@ export class GradeCompositionUseCase {
       throw new EntityNotFoundException('Class not found');
     }
 
-    if (!classEntity.hasMember(classId)) {
+    if (!classEntity.hasMember(currentUserId)) {
       throw new ForbiddenException("You don't have permission to access");
     }
 

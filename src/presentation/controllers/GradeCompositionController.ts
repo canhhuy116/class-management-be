@@ -12,6 +12,7 @@ import {
   Put,
   UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -26,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { GradeCompositionUseCase } from 'application/usecases/GradeCompositionUseCase';
+import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
@@ -47,10 +49,14 @@ export class GradeCompositionController {
   @ApiOperation({
     summary: 'Gets grade composition',
   })
-  async showGradeComposition(@Headers('class-id') currentClassId: number) {
+  async showGradeComposition(
+    @Headers('class-id') currentClassId: number,
+    @Request() req: RequestWithUser,
+  ) {
     const gradeCompositions =
       await this.gradeCompositionUseCase.showGradeComposition(
         parseInt(currentClassId.toString()),
+        req.user.userId,
       );
 
     return new SuccessResponseDTO({

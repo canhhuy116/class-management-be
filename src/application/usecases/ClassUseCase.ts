@@ -312,6 +312,8 @@ export class ClassUseCases {
     classDetail.backgroundImage = uploadResult;
 
     await this.classRepository.save(classDetail);
+
+    return uploadResult;
   }
 
   async getClassesWithRole(currentUserId: number) {

@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { IUsersRepository } from '../ports/IUserRepository';
 import { User } from 'domain/models/User';
 import { IStorageService } from 'application/ports/IStorageService';
+import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
 
 @Injectable()
 export class UsersUseCases {
@@ -32,17 +33,20 @@ export class UsersUseCases {
     return await this.usersRepository.save(user);
   }
 
-  async updateUser(user: User): Promise<boolean> {
-    this.logger.log(`Updating a user: ${user.id}`);
-    const userExists = await this.usersRepository.findOne(
-      { where: { id: user.id } },
-      { loadEagerRelations: true },
-    );
+  async updateUser(userId: number, userUpdate: UpdateUserVM): Promise<boolean> {
+    this.logger.log(`Updating a user: ${userId}`);
+    const userExists = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
 
     if (!userExists)
-      throw new NotFoundException(`The user {${user.id}} has not found.`);
+      throw new NotFoundException(`The user {${userId}} has not found.`);
 
-    const result = await this.usersRepository.update(user.id, user);
+    for (const key in userUpdate) {
+      if (userUpdate[key]) userExists[key] = userUpdate[key];
+    }
+
+    const result = await this.usersRepository.update(userId, userExists);
 
     return result.affected > 0;
   }

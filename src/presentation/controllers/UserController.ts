@@ -110,8 +110,7 @@ export class UsersController {
     @Request() req: RequestWithUser,
     @Body() user: UpdateUserVM,
   ): Promise<SuccessResponseDTO> {
-    user.id = req.user.userId;
-    await this.usersUseCases.updateUser(UpdateUserVM.fromViewModel(user));
+    await this.usersUseCases.updateUser(req.user.userId, user);
 
     return new SuccessResponseDTO({
       message: 'User updated',

@@ -3,8 +3,6 @@ import { IsString, IsNotEmpty, IsEmail, IsOptional } from 'class-validator';
 import { User } from 'domain/models/User';
 
 export class UpdateUserVM {
-  id: number;
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

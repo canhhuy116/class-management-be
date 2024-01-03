@@ -312,11 +312,14 @@ export class ClassController {
       throw new BadRequestException('File is required');
     }
 
-    await this.classUseCases.uploadBackgroundImage(file, classId);
+    const backgroundUrl = await this.classUseCases.uploadBackgroundImage(
+      file,
+      classId,
+    );
 
     return new SuccessResponseDTO({
       message: 'Background uploaded successfully!',
-      metadata: {},
+      metadata: { backgroundImage: backgroundUrl },
     });
   }
 
