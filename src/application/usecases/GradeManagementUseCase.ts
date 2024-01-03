@@ -196,14 +196,13 @@ export class GradeManagementUseCase {
     });
 
     if (findGrade) {
-      throw new EntityAlreadyExistException(
-        `The grade of student ${input.studentId} for assignment ${assignment.name} has already exist`,
-      );
+      findGrade.value = input.value;
+      findGrade.byTeacher(currentUserId);
+      await this.gradeRepository.save(findGrade);
+    } else {
+      input.byTeacher(currentUserId);
+      await this.gradeRepository.save(input);
     }
-
-    input.byTeacher(currentUserId);
-
-    await this.gradeRepository.save(input);
   }
 
   async downloadGradeAssignmentTemplate(classId: number, assignmentId: number) {
@@ -298,9 +297,10 @@ export class GradeManagementUseCase {
 
     const studentIds = students.map((student) => student.studentId);
 
-    const grades = excelGrades.map((grade) => {
-      const studentId = grade[this.columnsGradeAssignment[0]].toString();
-      const value = grade[this.columnsGradeAssignment[1]];
+    const grades = [];
+    for (const excelGrade of excelGrades) {
+      const studentId = excelGrade[this.columnsGradeAssignment[0]].toString();
+      const value = excelGrade[this.columnsGradeAssignment[1]];
 
       if (!studentIds.includes(studentId)) {
         throw new EntityNotFoundException(
@@ -314,12 +314,20 @@ export class GradeManagementUseCase {
         );
       }
 
-      const findGrade = new Grade(value, studentId, assignmentId);
+      const gradeExist = await this.gradeRepository.findOne({
+        where: { studentId, assignmentId },
+      });
 
-      findGrade.byTeacher(currentUserId);
-
-      return findGrade;
-    });
+      if (gradeExist) {
+        gradeExist.value = value;
+        gradeExist.byTeacher(currentUserId);
+        grades.push(gradeExist);
+      } else {
+        const grade = new Grade(value, studentId, assignmentId);
+        grade.byTeacher(currentUserId);
+        grades.push(grade);
+      }
+    }
 
     await this.gradeRepository.save(grades);
   }
