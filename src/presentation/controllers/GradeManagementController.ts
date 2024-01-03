@@ -283,4 +283,24 @@ export class GradeManagementController {
       metadata: {},
     });
   }
+
+  @Get('/total-grade-board')
+  @ApiOperation({
+    summary: 'Total grade board',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @UseGuards(TeacherRoleGuard)
+  async totalGradeBoard(@Headers('class-id') classId: number) {
+    const totalGradeBoard =
+      await this.gradeManagementUseCases.showTotalGrade(classId);
+
+    return new SuccessResponseDTO({
+      message: 'show total grade board successfully',
+      metadata: totalGradeBoard,
+    });
+  }
 }

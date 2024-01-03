@@ -323,4 +323,68 @@ export class GradeManagementUseCase {
 
     await this.gradeRepository.save(grades);
   }
+
+  async showTotalGrade(classId: number) {
+    this.logger.log(`Show total grade`);
+
+    const students = await this.studentRepository.find({
+      where: { classId },
+    });
+
+    const gradeCompositionInClass = await this.grandeCompositionRepository.find(
+      {
+        where: { classId },
+      },
+    );
+
+    const totalGradeBoard = [];
+    for (const gradeComposition of gradeCompositionInClass) {
+      const assignments = await this.assignmentRepository.find({
+        where: { gradeCompositionId: gradeComposition.id },
+      });
+
+      const gradeCompositionBoard = {
+        compositionId: gradeComposition.id,
+        compositionName: gradeComposition.name,
+        compositionWeight: gradeComposition.weight,
+        assignmentsBoard: [],
+      };
+
+      for (const assignment of assignments) {
+        const grades = await this.gradeRepository.find({
+          where: { assignmentId: assignment.id },
+        });
+
+        const assignmentBoard = {
+          assignmentId: assignment.id,
+          assignmentName: assignment.name,
+          maxScore: assignment.maxScore,
+          gradesBoard: [],
+        };
+
+        grades.forEach((grade) => {
+          assignmentBoard.gradesBoard.push({
+            studentId: grade.studentId,
+            value: grade.value,
+          });
+        });
+
+        gradeCompositionBoard.assignmentsBoard.push(assignmentBoard);
+      }
+
+      totalGradeBoard.push(gradeCompositionBoard);
+    }
+
+    const studentList = students.map((student) => {
+      return {
+        studentId: student.studentId,
+        fullName: student.fullName,
+      };
+    });
+
+    return {
+      studentList,
+      totalGradeBoard,
+    };
+  }
 }
