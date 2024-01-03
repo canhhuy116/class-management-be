@@ -15,7 +15,8 @@ import { InputStudentGradeAssignmentVM } from 'presentation/view-model/grademana
 @Injectable()
 export class GradeManagementUseCase {
   private readonly logger = new Logger(GradeManagementUseCase.name);
-  private readonly columns = ['Student ID', 'Full name'];
+  private readonly columnsStudentList = ['Student ID', 'Full name'];
+  private readonly columnsGradeAssignment = ['Student ID', 'Grade'];
   constructor(
     private readonly excelService: IExcelService,
     private readonly studentRepository: IStudentRepository,
@@ -29,7 +30,7 @@ export class GradeManagementUseCase {
 
     const buffer = await this.excelService.generateExcelTemplate(
       'Student List',
-      this.columns,
+      this.columnsStudentList,
     );
 
     return buffer;
@@ -40,7 +41,7 @@ export class GradeManagementUseCase {
 
     const excelStudents = await this.excelService.excelToEntities(
       buffer,
-      this.columns,
+      this.columnsStudentList,
     );
 
     const existingStudents = await this.studentRepository.find({
@@ -51,8 +52,8 @@ export class GradeManagementUseCase {
     );
 
     const updatedStudents = excelStudents.map((student) => {
-      const studentId = student[this.columns[0]].toString();
-      const fullName = student[this.columns[1]];
+      const studentId = student[this.columnsStudentList[0]].toString();
+      const fullName = student[this.columnsStudentList[1]];
 
       const existingStudentIndex = existingStudentIds.has(studentId)
         ? existingStudents.findIndex((s) => s.studentId === studentId)
@@ -234,8 +235,6 @@ export class GradeManagementUseCase {
       );
     }
 
-    const columns = ['Student ID', 'Grade'];
-
     const students = await this.studentRepository.find({
       where: { classId },
     });
@@ -246,11 +245,82 @@ export class GradeManagementUseCase {
 
     const buffer = await this.excelService.generateExcelTemplate(
       `Grade Assignment ${assignment.name}`,
-      columns,
+      this.columnsGradeAssignment,
       studentIds,
       0,
     );
 
     return buffer;
+  }
+
+  async uploadGradeAssignment(
+    buffer: Buffer,
+    classId: number,
+    assignmentId: number,
+    currentUserId: number,
+  ) {
+    this.logger.log(`Uploading grade assignment`);
+
+    const assignment = await this.assignmentRepository.findOne({
+      where: { id: assignmentId },
+    });
+
+    if (!assignment) {
+      throw new EntityNotFoundException(
+        `The assignment ${assignmentId} has not found`,
+      );
+    }
+
+    const gradeComposition = await this.grandeCompositionRepository.findOne({
+      where: { id: assignment.gradeCompositionId },
+    });
+
+    if (!gradeComposition) {
+      throw new EntityNotFoundException(
+        `The grade composition ${assignment.gradeCompositionId} has not found`,
+      );
+    }
+
+    if (gradeComposition.classId != classId) {
+      throw new EntityNotFoundException(
+        `The grade composition ${assignment.gradeCompositionId} has not found in class ${classId}`,
+      );
+    }
+
+    const excelGrades = await this.excelService.excelToEntities(
+      buffer,
+      this.columnsGradeAssignment,
+    );
+
+    const students = await this.studentRepository.find({
+      where: { classId },
+    });
+
+    const studentIds = students.map((student) => student.studentId);
+
+    const grades = excelGrades.map((grade) => {
+      const studentId = grade[this.columnsGradeAssignment[0]].toString();
+      const value = grade[this.columnsGradeAssignment[1]];
+
+      if (!studentIds.includes(studentId)) {
+        throw new EntityNotFoundException(
+          `The student ${studentId} has not found`,
+        );
+      }
+
+      if (value > assignment.maxScore || value < 0 || !value) {
+        throw new InvalidValueException(
+          `The score ${value} is greater than max score ${assignment.maxScore} or less than 0`,
+        );
+      }
+
+      const findGrade = new Grade(value, studentId, assignmentId);
+
+      findGrade.byTeacher(currentUserId);
+
+      return findGrade;
+    });
+
+    await this.gradeRepository.save(grades);
   }
 }

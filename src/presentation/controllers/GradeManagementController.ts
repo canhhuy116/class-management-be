@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
   Request,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -227,5 +228,59 @@ export class GradeManagementController {
       'attachment; filename=grade-assignment-template.xlsx',
     );
     res.send(excelBuffer);
+  }
+
+  @Post('grade-assignment-template')
+  @ApiOperation({
+    summary: 'Upload grade assignment template',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Grade assignment template',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiQuery({
+    name: 'assignment-id',
+    description: 'Assignment ID',
+    required: true,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(TeacherRoleGuard)
+  async uploadGradeAssignmentTemplate(
+    @Headers('class-id') classId: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Query('assignment-id') assignmentId: number,
+    @Request() req: RequestWithUser,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    const buffer: Buffer = file.buffer;
+
+    await this.gradeManagementUseCases.uploadGradeAssignment(
+      buffer,
+      classId,
+      assignmentId,
+      req.user.userId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Upload grade assignment successfully',
+      metadata: {},
+    });
   }
 }
