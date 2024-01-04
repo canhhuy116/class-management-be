@@ -339,6 +339,13 @@ export class GradeManagementUseCase {
       where: { classId },
     });
 
+    const studentList = students.map((student) => {
+      return {
+        studentId: student.studentId,
+        fullName: student.fullName,
+      };
+    });
+
     const gradeCompositionInClass = await this.grandeCompositionRepository.find(
       {
         where: { classId },
@@ -372,7 +379,9 @@ export class GradeManagementUseCase {
 
         grades.forEach((grade) => {
           assignmentBoard.gradesBoard.push({
-            studentId: grade.studentId,
+            indexStudent: studentList.findIndex(
+              (student) => student.studentId === grade.studentId,
+            ),
             value: grade.value,
           });
         });
@@ -383,16 +392,89 @@ export class GradeManagementUseCase {
       totalGradeBoard.push(gradeCompositionBoard);
     }
 
-    const studentList = students.map((student) => {
-      return {
-        studentId: student.studentId,
-        fullName: student.fullName,
-      };
-    });
-
     return {
       studentList,
       totalGradeBoard,
+    };
+  }
+
+  async markViewableGradeComposition(classId: number, compositionId: number) {
+    this.logger.log(`Mark viewable grade composition`);
+
+    const gradeComposition = await this.grandeCompositionRepository.findOne({
+      where: { id: compositionId },
+    });
+
+    if (!gradeComposition) {
+      throw new EntityNotFoundException(
+        `The grade composition ${compositionId} has not found`,
+      );
+    }
+
+    if (gradeComposition.classId != classId) {
+      throw new EntityNotFoundException(
+        `The grade composition ${compositionId} has not found in class ${classId}`,
+      );
+    }
+
+    gradeComposition.enableView();
+    await this.grandeCompositionRepository.save(gradeComposition);
+  }
+
+  async viewGrade(classId: number, userId: number, gradeCompositionId: number) {
+    this.logger.log(`Show student grade board`);
+
+    const student = await this.studentRepository.findOne({
+      where: { userId, classId },
+    });
+
+    if (!student || !student.studentId) {
+      throw new EntityNotFoundException(`The student has not found`);
+    }
+
+    const studentId = student.studentId;
+
+    const gradeComposition = await this.grandeCompositionRepository.findOne({
+      where: { id: gradeCompositionId },
+    });
+
+    if (!gradeComposition) {
+      throw new EntityNotFoundException(
+        `The grade composition ${gradeCompositionId} has not found`,
+      );
+    }
+
+    if (gradeComposition.classId != classId) {
+      throw new EntityNotFoundException(
+        `The grade composition ${gradeCompositionId} has not found in class ${classId}`,
+      );
+    }
+
+    if (!gradeComposition.viewable) {
+      throw new InvalidValueException(`The grade composition is not viewable`);
+    }
+
+    const assignments = await this.assignmentRepository.find({
+      where: { gradeCompositionId },
+    });
+
+    const gradeBoard = [];
+    for (const assignment of assignments) {
+      const grade = await this.gradeRepository.findOne({
+        where: { studentId, assignmentId: assignment.id },
+      });
+
+      gradeBoard.push({
+        assignmentId: assignment.id,
+        assignmentName: assignment.name,
+        maxScore: assignment.maxScore,
+        value: grade ? grade.value : null,
+      });
+    }
+
+    return {
+      studentId,
+      gradeBoard,
     };
   }
 }

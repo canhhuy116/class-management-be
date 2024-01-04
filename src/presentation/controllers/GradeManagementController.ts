@@ -303,4 +303,66 @@ export class GradeManagementController {
       metadata: totalGradeBoard,
     });
   }
+
+  @Post('/mark-viewable-grade')
+  @ApiOperation({
+    summary: 'Mark viewable grade',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @ApiBody({
+    description: 'Grade composition ID',
+    schema: {
+      type: 'object',
+      properties: {
+        gradeCompositionId: {
+          type: 'number',
+        },
+      },
+    },
+  })
+  @UseGuards(TeacherRoleGuard)
+  async markViewableGrade(
+    @Headers('class-id') classId: number,
+    @Body() body: { gradeCompositionId: number },
+  ) {
+    await this.gradeManagementUseCases.markViewableGradeComposition(
+      classId,
+      body.gradeCompositionId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Mark viewable grade successfully',
+      metadata: {},
+    });
+  }
+
+  @Get('/view-grade/:compositionId')
+  @ApiOperation({
+    summary: 'View grade',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  async viewGrade(
+    @Request() req: RequestWithUser,
+    @Headers('class-id') classId: number,
+    @Query('compositionId') compositionId: number,
+  ) {
+    const grade = await this.gradeManagementUseCases.viewGrade(
+      classId,
+      req.user.userId,
+      compositionId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'View grade successfully',
+      metadata: grade,
+    });
+  }
 }
