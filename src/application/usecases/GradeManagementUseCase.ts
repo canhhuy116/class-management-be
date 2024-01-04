@@ -459,6 +459,8 @@ export class GradeManagementUseCase {
     });
 
     const gradeBoard = [];
+    let totalScore = 0;
+    let totalMaxScore = 0;
     for (const assignment of assignments) {
       const grade = await this.gradeRepository.findOne({
         where: { studentId, assignmentId: assignment.id },
@@ -470,11 +472,17 @@ export class GradeManagementUseCase {
         maxScore: assignment.maxScore,
         value: grade ? grade.value : null,
       });
+
+      totalScore += grade ? grade.value : 0;
+      totalMaxScore += assignment.maxScore;
     }
 
     return {
       studentId,
       gradeBoard,
+      totalScore,
+      totalMaxScore,
+      weight: gradeComposition.weight,
     };
   }
 }
