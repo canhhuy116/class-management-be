@@ -40,7 +40,7 @@ export class TeacherAndStudentVM {
       UserVM.toViewModel(student.student).withStudentId(student.studentId),
     );
 
-    return plainToClass(
+    const teacherAndStudentVM = plainToClass(
       TeacherAndStudentVM,
       {
         ...classDetail,
@@ -49,5 +49,9 @@ export class TeacherAndStudentVM {
       },
       { excludeExtraneousValues: true },
     );
+
+    teacherAndStudentVM.students = studentsVM;
+
+    return teacherAndStudentVM;
   }
 }

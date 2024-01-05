@@ -36,7 +36,22 @@ export class UserVM {
 
   studentId?: string;
 
+  constructor(partial: Partial<UserVM>) {
+    Object.assign(this, partial);
+  }
+
   static toViewModel(user: User): UserVM {
+    if (!user) {
+      return new UserVM({
+        id: null,
+        name: null,
+        email: null,
+        phoneNumber: null,
+        address: null,
+        avatar: null,
+        studentId: null,
+      });
+    }
     return plainToClass(UserVM, user, { excludeExtraneousValues: true });
   }
 
