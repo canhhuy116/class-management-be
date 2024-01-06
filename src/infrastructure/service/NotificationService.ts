@@ -4,6 +4,7 @@ import { INotificationRepository } from 'application/ports/INotificationReposito
 import { INotificationService } from 'application/ports/INotificationService';
 import { Notification } from 'domain/models/Notification';
 import { NotificationType } from 'domain/models/NotificationType';
+import { In } from 'typeorm';
 
 @Injectable()
 export class NotificationService implements INotificationService {
@@ -45,9 +46,12 @@ export class NotificationService implements INotificationService {
     await this.notificationRepository.save(notification);
   }
 
-  async pullNotification(userId: number): Promise<Notification[]> {
+  async pullNotification(
+    userId: number,
+    resourceIds: number[],
+  ): Promise<Notification[]> {
     const findNotifications = await this.notificationRepository.find({
-      where: { receiverId: userId },
+      where: [{ receiverId: userId }, { resourceId: In(resourceIds) }],
     });
 
     return findNotifications;

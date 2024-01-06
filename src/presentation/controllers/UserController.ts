@@ -31,6 +31,7 @@ import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
 import { CreateUserVM } from 'presentation/view-model/users/CreateUserVM';
+import { NotificationVM } from 'presentation/view-model/users/NotificationVM';
 import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
 import { UserVM } from 'presentation/view-model/users/UserVM';
 import { NotFoundError } from 'rxjs';
@@ -149,6 +150,26 @@ export class UsersController {
     return new SuccessResponseDTO({
       message: 'User updated',
       metadata: { avatar: avatarUrl },
+    });
+  }
+
+  @Get('/cotext/notification')
+  @ApiOperation({
+    summary: 'Get notifications of user',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  async getNotifications(@Request() req: RequestWithUser) {
+    const notifications = await this.usersUseCases.getNotifications(
+      req.user.userId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Notifications fetched',
+      metadata: {
+        notifications: notifications.map((notify) =>
+          NotificationVM.toViewModel(notify),
+        ),
+      },
     });
   }
 }

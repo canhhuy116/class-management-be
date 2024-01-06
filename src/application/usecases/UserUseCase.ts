@@ -3,6 +3,9 @@ import { IUsersRepository } from '../ports/IUserRepository';
 import { User } from 'domain/models/User';
 import { IStorageService } from 'application/ports/IStorageService';
 import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
+import { INotificationService } from 'application/ports/INotificationService';
+import { IClassRepository } from 'application/ports/IClassRepository';
+import { IStudentRepository } from 'application/ports/IStudentRepository';
 
 @Injectable()
 export class UsersUseCases {
@@ -11,6 +14,8 @@ export class UsersUseCases {
   constructor(
     private readonly usersRepository: IUsersRepository,
     private readonly storageService: IStorageService,
+    private readonly notification: INotificationService,
+    private readonly studentRepository: IStudentRepository,
   ) {}
 
   async getUsers(): Promise<User[]> {
@@ -72,5 +77,17 @@ export class UsersUseCases {
     });
 
     return uploadResult;
+  }
+
+  async getNotifications(userId: number) {
+    this.logger.log(`Getting notifications from user: ${userId}`);
+
+    const students = await this.studentRepository.find({
+      where: { userId },
+    });
+
+    const resourceIds = students.map((student) => student.classId);
+
+    return await this.notification.pullNotification(userId, resourceIds);
   }
 }

@@ -11,5 +11,8 @@ export abstract class INotificationService {
     receiverId: number,
   ): Promise<void>;
 
-  abstract pullNotification(userId: number): Promise<Notification[]>;
+  abstract pullNotification(
+    userId: number,
+    resourceIds: number[],
+  ): Promise<Notification[]>;
 }
