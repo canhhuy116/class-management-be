@@ -409,6 +409,8 @@ export class GradeManagementUseCase {
       throw new EntityNotFoundException(`The student has not found`);
     }
 
+    const studentId = student.studentId;
+
     const gradeCompositionInClass = await this.grandeCompositionRepository.find(
       {
         where: { classId },
@@ -429,10 +431,15 @@ export class GradeManagementUseCase {
       };
 
       for (const assignment of assignments) {
+        const grade = await this.gradeRepository.findOne({
+          where: { studentId, assignmentId: assignment.id },
+        });
+
         gradeCompositionBoard.assignmentsBoard.push({
           assignmentId: assignment.id,
           assignmentName: assignment.name,
           maxScore: assignment.maxScore,
+          value: gradeComposition.viewable && grade && grade.value,
         });
       }
 
