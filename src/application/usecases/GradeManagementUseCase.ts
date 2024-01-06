@@ -398,6 +398,52 @@ export class GradeManagementUseCase {
     };
   }
 
+  async studentViewGradeBoard(classId: number, userId: number) {
+    this.logger.log(`Student view grade board`);
+
+    const student = await this.studentRepository.findOne({
+      where: { userId, classId },
+    });
+
+    if (!student || !student.studentId) {
+      throw new EntityNotFoundException(`The student has not found`);
+    }
+
+    const gradeCompositionInClass = await this.grandeCompositionRepository.find(
+      {
+        where: { classId },
+      },
+    );
+
+    const totalGradeBoard = [];
+    for (const gradeComposition of gradeCompositionInClass) {
+      const assignments = await this.assignmentRepository.find({
+        where: { gradeCompositionId: gradeComposition.id },
+      });
+
+      const gradeCompositionBoard = {
+        compositionId: gradeComposition.id,
+        compositionName: gradeComposition.name,
+        compositionWeight: gradeComposition.weight,
+        assignmentsBoard: [],
+      };
+
+      for (const assignment of assignments) {
+        gradeCompositionBoard.assignmentsBoard.push({
+          assignmentId: assignment.id,
+          assignmentName: assignment.name,
+          maxScore: assignment.maxScore,
+        });
+      }
+
+      totalGradeBoard.push(gradeCompositionBoard);
+    }
+
+    return {
+      totalGradeBoard,
+    };
+  }
+
   async markViewableGradeComposition(classId: number, compositionId: number) {
     this.logger.log(`Mark viewable grade composition`);
 

@@ -365,4 +365,29 @@ export class GradeManagementController {
       metadata: grade,
     });
   }
+
+  @Get('/view-grade-board')
+  @ApiOperation({
+    summary: 'View grade board',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  async viewGradeBoard(
+    @Request() req: RequestWithUser,
+    @Headers('class-id') classId: number,
+  ) {
+    const totalGradeBoard =
+      await this.gradeManagementUseCases.studentViewGradeBoard(
+        classId,
+        req.user.userId,
+      );
+
+    return new SuccessResponseDTO({
+      message: 'show total grade board successfully',
+      metadata: totalGradeBoard,
+    });
+  }
 }
