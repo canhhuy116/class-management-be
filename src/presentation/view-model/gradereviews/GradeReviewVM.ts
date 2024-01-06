@@ -3,6 +3,9 @@ import { GradeReview } from 'domain/models/GradeReview';
 
 export class GradeReviewVM {
   @Expose()
+  id: number;
+
+  @Expose()
   assignmentId: number;
 
   @Expose()

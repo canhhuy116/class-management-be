@@ -18,4 +18,10 @@ export class Grade extends BaseModel {
 
     return this;
   }
+
+  updateValue(value: number) {
+    this.value = value;
+
+    return this;
+  }
 }

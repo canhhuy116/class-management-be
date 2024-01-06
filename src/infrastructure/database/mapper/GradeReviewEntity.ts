@@ -35,6 +35,16 @@ export const GradeReviewEntity = new EntitySchema<GradeReview>({
       name: 'is_reviewed',
       default: false,
     },
+    commentApprove: {
+      type: String,
+      name: 'comment_approve',
+      nullable: true,
+    },
+    commentReject: {
+      type: String,
+      name: 'comment_reject',
+      nullable: true,
+    },
   },
   orderBy: {
     createdAt: 'ASC',

@@ -22,6 +22,7 @@ import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { CreateGradeReviewVM } from 'presentation/view-model/gradereviews/CreateGradeReviewVM';
 import { GradeReviewVM } from 'presentation/view-model/gradereviews/GradeReviewVM';
+import { ReviewVM } from 'presentation/view-model/gradereviews/ReviewVM';
 
 @ApiBearerAuth()
 @ApiTags('Grade Review')
@@ -85,6 +86,33 @@ export class GradeReviewController {
           GradeReviewVM.toViewModel(gradeReview),
         ),
       },
+    });
+  }
+
+  @Post('review')
+  @ApiOperation({
+    summary: 'Teacher review grade review',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @UseGuards(TeacherRoleGuard)
+  async teacherReviewGradeReview(
+    @Headers('class-id') classId: number,
+    @Request() req: RequestWithUser,
+    @Body() review: ReviewVM,
+  ) {
+    await this.gradeReviewUseCase.teacherReviewGradeReview(
+      review,
+      classId,
+      req.user.userId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Teacher review grade review successfully',
+      metadata: {},
     });
   }
 }
