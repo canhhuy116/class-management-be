@@ -361,6 +361,7 @@ export class GradeManagementUseCase {
         compositionId: gradeComposition.id,
         compositionName: gradeComposition.name,
         compositionWeight: gradeComposition.weight,
+        viewable: gradeComposition.viewable,
         assignmentsBoard: [],
       };
 
@@ -446,6 +447,7 @@ export class GradeManagementUseCase {
     }
 
     return {
+      student: [{ studentId, fullName: student.fullName }],
       totalGradeBoard,
     };
   }
