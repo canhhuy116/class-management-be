@@ -1,3 +1,4 @@
+import { Assignment } from './Assignment';
 import { BaseModel } from './BaseModel';
 
 export class GradeComposition extends BaseModel {

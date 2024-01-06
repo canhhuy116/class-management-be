@@ -47,7 +47,7 @@ export const GradeReviewEntity = new EntitySchema<GradeReview>({
         name: 'teacher_id',
       },
     },
-    assignmentId: {
+    assignment: {
       type: 'many-to-one',
       target: 'Assignment',
       joinColumn: {

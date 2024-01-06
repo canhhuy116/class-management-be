@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { IAssignmentRepository } from 'application/ports/IAssignmentRepository';
+import { IClassRepository } from 'application/ports/IClassRepository';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
 import { IGradeRepository } from 'application/ports/IGradeRepository';
 import { IGradeReviewRepository } from 'application/ports/IGradeReviewRepository';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { GradeReviewUseCase } from 'application/usecases/GradeReviewUseCase';
 import { AssignmentRepository } from 'infrastructure/database/repository/AssignmentRepository';
+import { ClassRepository } from 'infrastructure/database/repository/ClassRepository';
 import { GradeCompositionRepository } from 'infrastructure/database/repository/GradeCompositionRepository';
 import { GradeRepository } from 'infrastructure/database/repository/GradeRepository';
 import { GradeReviewRepository } from 'infrastructure/database/repository/GradeReviewRepository';
@@ -25,6 +27,7 @@ import { GradeReviewController } from 'presentation/controllers/GradeReviewContr
       useClass: GradeCompositionRepository,
     },
     { provide: IAssignmentRepository, useClass: AssignmentRepository },
+    { provide: IClassRepository, useClass: ClassRepository },
   ],
 })
 export class GradeReviewModule {}

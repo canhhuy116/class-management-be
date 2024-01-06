@@ -1,3 +1,4 @@
+import { Assignment } from './Assignment';
 import { BaseModel } from './BaseModel';
 
 export class GradeReview extends BaseModel {
@@ -8,6 +9,7 @@ export class GradeReview extends BaseModel {
   expectedValue: number;
   message: string;
   isReviewed: boolean;
+  assignment: Assignment;
 
   constructor(assignmentId: number, expectedValue: number, message: string) {
     super();

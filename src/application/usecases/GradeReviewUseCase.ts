@@ -104,4 +104,42 @@ export class GradeReviewUseCase {
 
     await this.gradeReviewRepository.save(gradeReview);
   }
+
+  async teacherViewGradeReview(classId: number, currentUserId: number) {
+    this.logger.log('Teacher view grade review');
+
+    const gradeCompositions = await this.gradeComposition.find({
+      where: {
+        classId,
+      },
+    });
+
+    const assignmentIds: number[] = [];
+
+    for (const gradeComposition of gradeCompositions) {
+      const assignments = await this.assignmentRepository.find({
+        where: {
+          gradeCompositionId: gradeComposition.id,
+        },
+      });
+
+      for (const assignment of assignments) {
+        assignmentIds.push(assignment.id);
+      }
+    }
+
+    const gradeReviewOfUser = await this.gradeReviewRepository.find({
+      where: {
+        teacherId: currentUserId,
+        isReviewed: false,
+      },
+      relations: ['assignment'],
+    });
+
+    const gradeReviews = gradeReviewOfUser.filter((gradeReview) =>
+      assignmentIds.includes(gradeReview.assignmentId),
+    );
+
+    return gradeReviews;
+  }
 }
