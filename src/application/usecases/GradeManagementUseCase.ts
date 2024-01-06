@@ -3,6 +3,7 @@ import { IAssignmentRepository } from 'application/ports/IAssignmentRepository';
 import { IExcelService } from 'application/ports/IExcelService';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
 import { IGradeRepository } from 'application/ports/IGradeRepository';
+import { INotificationService } from 'application/ports/INotificationService';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
@@ -10,6 +11,7 @@ import { InvalidValueException } from 'domain/exceptions/InvalidValueException';
 import { Assignment } from 'domain/models/Assignment';
 import { ClassStudent } from 'domain/models/ClassStudent';
 import { Grade } from 'domain/models/Grade';
+import { NotificationType } from 'domain/models/NotificationType';
 
 @Injectable()
 export class GradeManagementUseCase {
@@ -22,6 +24,7 @@ export class GradeManagementUseCase {
     private readonly grandeCompositionRepository: IGradeCompositionRepository,
     private readonly assignmentRepository: IAssignmentRepository,
     private readonly gradeRepository: IGradeRepository,
+    private readonly notificationService: INotificationService,
   ) {}
 
   async downloadStudentListTemplate(): Promise<Buffer> {
@@ -471,8 +474,26 @@ export class GradeManagementUseCase {
       );
     }
 
+    if (gradeComposition.viewable) {
+      throw new EntityAlreadyExistException(
+        `The grade composition ${compositionId} is viewable`,
+      );
+    }
+
     gradeComposition.enableView();
     await this.grandeCompositionRepository.save(gradeComposition);
+
+    const titleNotification = `The grade composition ${gradeComposition.name} has been viewable`;
+    const notificationType = NotificationType.MARK_FINAl_GRADE;
+    const data = { classId };
+    const resourceId = classId;
+
+    await this.notificationService.pushNotification(
+      titleNotification,
+      notificationType,
+      data,
+      resourceId,
+    );
   }
 
   async viewGrade(classId: number, userId: number, gradeCompositionId: number) {

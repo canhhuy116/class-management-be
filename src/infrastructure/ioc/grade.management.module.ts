@@ -13,9 +13,10 @@ import { GradeRepository } from 'infrastructure/database/repository/GradeReposit
 import { StudentRepository } from 'infrastructure/database/repository/StudentRepository';
 import { ExcelService } from 'infrastructure/service/ExcelService';
 import { GradeManagementController } from 'presentation/controllers/GradeManagementController';
+import { NotificationModule } from './notification.module';
 
 @Module({
-  imports: [],
+  imports: [NotificationModule],
   controllers: [GradeManagementController],
   providers: [
     GradeManagementUseCase,

@@ -1,0 +1,5 @@
+export enum NotificationType {
+  MARK_FINAl_GRADE = 'MARK_FINAl_GRADE',
+  REVIEW_REQUEST = 'REVIEW_REQUEST',
+  REQUEST_REVIEW = 'REQUEST_REVIEW',
+}
