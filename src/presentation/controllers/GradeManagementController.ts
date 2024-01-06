@@ -211,7 +211,7 @@ export class GradeManagementController {
   async downloadGradeAssignmentTemplate(
     @Res() res: Response,
     @Headers('class-id') classId: number,
-    @Headers('assignment-id') assignmentId: number,
+    @Query('assignment-id') assignmentId: number,
   ) {
     const excelBuffer =
       await this.gradeManagementUseCases.downloadGradeAssignmentTemplate(
