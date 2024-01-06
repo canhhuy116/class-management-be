@@ -13,9 +13,10 @@ import { GradeRepository } from 'infrastructure/database/repository/GradeReposit
 import { GradeReviewRepository } from 'infrastructure/database/repository/GradeReviewRepository';
 import { StudentRepository } from 'infrastructure/database/repository/StudentRepository';
 import { GradeReviewController } from 'presentation/controllers/GradeReviewController';
+import { NotificationModule } from './notification.module';
 
 @Module({
-  imports: [],
+  imports: [NotificationModule],
   controllers: [GradeReviewController],
   providers: [
     GradeReviewUseCase,

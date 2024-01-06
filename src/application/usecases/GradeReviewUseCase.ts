@@ -3,10 +3,12 @@ import { IAssignmentRepository } from 'application/ports/IAssignmentRepository';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
 import { IGradeRepository } from 'application/ports/IGradeRepository';
 import { IGradeReviewRepository } from 'application/ports/IGradeReviewRepository';
+import { INotificationService } from 'application/ports/INotificationService';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 import { GradeReview } from 'domain/models/GradeReview';
+import { NotificationType } from 'domain/models/NotificationType';
 import { ReviewVM } from 'presentation/view-model/gradereviews/ReviewVM';
 
 @Injectable()
@@ -19,6 +21,7 @@ export class GradeReviewUseCase {
     private readonly gradeRepository: IGradeRepository,
     private readonly assignmentRepository: IAssignmentRepository,
     private readonly gradeComposition: IGradeCompositionRepository,
+    private readonly notificationService: INotificationService,
   ) {}
 
   async studentRequestReview(
@@ -104,6 +107,18 @@ export class GradeReviewUseCase {
     gradeReview.requestTo(findGrade.teacherId);
 
     await this.gradeReviewRepository.save(gradeReview);
+
+    const titleNotification = `Student ${student.studentId} request review grade for assignment ${assignment.name}`;
+    const notificationType = NotificationType.REQUEST_REVIEW;
+    const data = { classId, assignmentId: assignment.id };
+    const receiverId = findGrade.teacherId;
+
+    await this.notificationService.pushNotification(
+      titleNotification,
+      notificationType,
+      data,
+      receiverId,
+    );
   }
 
   async teacherViewGradeReview(classId: number, currentUserId: number) {
@@ -237,6 +252,24 @@ export class GradeReviewUseCase {
     }
 
     await this.gradeReviewRepository.save(gradeReview);
+
+    const titleNotification = `Teacher review grade review for assignment ${findAssignment.name}`;
+    const notificationType = NotificationType.REVIEW_REQUEST;
+    const data = { classId, assignmentId: findAssignment.id };
+    const studentAccount = await this.studentRepository.findOne({
+      where: {
+        studentId: gradeReview.studentId,
+        classId,
+      },
+    });
+    const receiverId = studentAccount.userId;
+
+    await this.notificationService.pushNotification(
+      titleNotification,
+      notificationType,
+      data,
+      receiverId,
+    );
   }
 
   async studentViewReviewOfTeacher(
