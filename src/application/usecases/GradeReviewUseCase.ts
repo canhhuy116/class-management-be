@@ -238,4 +238,63 @@ export class GradeReviewUseCase {
 
     await this.gradeReviewRepository.save(gradeReview);
   }
+
+  async studentViewReviewOfTeacher(
+    currentUserId: number,
+    classId: number,
+    assignmentId: number,
+  ) {
+    this.logger.log('Student view review of teacher');
+
+    const student = await this.studentRepository.findOne({
+      where: {
+        userId: currentUserId,
+        classId,
+      },
+    });
+
+    if (!student) {
+      throw new EntityNotFoundException('Student not found');
+    }
+
+    const gradeReviewsForAssignment = await this.gradeReviewRepository.find({
+      where: {
+        assignmentId,
+        studentId: student.studentId,
+      },
+    });
+
+    const gradeReviews = [];
+
+    for (const gradeReview of gradeReviewsForAssignment) {
+      const isReviewed = gradeReview.isReviewed;
+
+      const studentComment = gradeReview.message;
+
+      if (!isReviewed) {
+        gradeReviews.push({
+          isReviewed,
+          isApproved: null,
+          studentComment,
+          teacherComment: null,
+        });
+        continue;
+      }
+
+      const isApproved = gradeReview.commentApprove != null;
+
+      const teacherComment = isApproved
+        ? gradeReview.commentApprove
+        : gradeReview.commentReject;
+
+      gradeReviews.push({
+        isReviewed,
+        isApproved,
+        studentComment,
+        teacherComment,
+      });
+    }
+
+    return gradeReviews;
+  }
 }

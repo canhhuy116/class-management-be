@@ -7,12 +7,14 @@ import {
   Request,
   Headers,
   Get,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiHeader,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
@@ -113,6 +115,40 @@ export class GradeReviewController {
     return new SuccessResponseDTO({
       message: 'Teacher review grade review successfully',
       metadata: {},
+    });
+  }
+
+  @Get('view-review')
+  @ApiOperation({
+    summary: 'Student view review of teacher',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'assignment-id',
+    description: 'Assignment ID',
+    required: true,
+  })
+  async getDetailGradeReview(
+    @Headers('class-id') classId: number,
+    @Request() req: RequestWithUser,
+    @Query('assignment-id') assignmentId: number,
+  ) {
+    const gradeReview =
+      await this.gradeReviewUseCase.studentViewReviewOfTeacher(
+        req.user.userId,
+        classId,
+        assignmentId,
+      );
+
+    return new SuccessResponseDTO({
+      message: 'Get detail grade review successfully',
+      metadata: {
+        gradeReview,
+      },
     });
   }
 }
