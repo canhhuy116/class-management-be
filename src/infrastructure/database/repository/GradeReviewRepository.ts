@@ -7,7 +7,7 @@ import { IGradeReviewRepository } from 'application/ports/IGradeReviewRepository
 import { GradeReviewEntity } from '../mapper/GradeReviewEntity';
 
 @Injectable()
-export class GradeRepository
+export class GradeReviewRepository
   extends BaseRepository<GradeReview>
   implements IGradeReviewRepository
 {

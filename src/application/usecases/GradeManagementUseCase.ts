@@ -10,7 +10,6 @@ import { InvalidValueException } from 'domain/exceptions/InvalidValueException';
 import { Assignment } from 'domain/models/Assignment';
 import { ClassStudent } from 'domain/models/ClassStudent';
 import { Grade } from 'domain/models/Grade';
-import { InputStudentGradeAssignmentVM } from 'presentation/view-model/grademanagement/InputGradeStudentAssignment';
 
 @Injectable()
 export class GradeManagementUseCase {

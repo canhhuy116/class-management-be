@@ -30,6 +30,11 @@ export const GradeReviewEntity = new EntitySchema<GradeReview>({
     message: {
       type: String,
     },
+    isReviewed: {
+      type: Boolean,
+      name: 'is_reviewed',
+      default: false,
+    },
   },
   orderBy: {
     createdAt: 'ASC',

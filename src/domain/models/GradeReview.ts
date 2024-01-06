@@ -7,6 +7,7 @@ export class GradeReview extends BaseModel {
   value: number;
   expectedValue: number;
   message: string;
+  isReviewed: boolean;
 
   constructor(assignmentId: number, expectedValue: number, message: string) {
     super();
@@ -29,6 +30,12 @@ export class GradeReview extends BaseModel {
 
   withCurrentValue(value: number) {
     this.value = value;
+
+    return this;
+  }
+
+  markAsReviewed() {
+    this.isReviewed = true;
 
     return this;
   }
