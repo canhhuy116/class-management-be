@@ -128,6 +128,10 @@ export class AuthUseCase {
       throw new ForbiddenException('User not confirmed');
     }
 
+    if (user.isLocked()) {
+      throw new ForbiddenException('User locked');
+    }
+
     const passwordMatch = await compare(loginData.password, user.password);
 
     if (!passwordMatch) {
@@ -152,6 +156,10 @@ export class AuthUseCase {
 
     if (!user.isConfirmed) {
       throw new ForbiddenException('User not confirmed');
+    }
+
+    if (user.isLocked()) {
+      throw new ForbiddenException('User locked');
     }
 
     return user;

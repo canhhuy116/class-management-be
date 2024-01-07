@@ -82,6 +82,21 @@ export class UsersUseCases {
     return result.affected > 0;
   }
 
+  async lockUser(id: number): Promise<boolean> {
+    this.logger.log(`Locking a user: ${id}`);
+
+    const userExists = await this.usersRepository.findOne({ where: { id } });
+
+    if (!userExists)
+      throw new NotFoundException(`The user {${id}} has not found.`);
+
+    userExists.lockAccount();
+
+    const result = await this.usersRepository.update(id, userExists);
+
+    return result.affected > 0;
+  }
+
   async updateAvatar(id: number, avatar: Express.Multer.File) {
     this.logger.log(`Updating a user avatar: ${id}`);
     const userExists = await this.usersRepository.findOne({ where: { id } });

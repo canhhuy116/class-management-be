@@ -64,4 +64,12 @@ export class User extends BaseModel {
   isAdmin(): boolean {
     return this.role === RoleSystem.ADMIN;
   }
+
+  lockAccount() {
+    this.isActive = false;
+  }
+
+  isLocked(): boolean {
+    return this.isActive === false;
+  }
 }

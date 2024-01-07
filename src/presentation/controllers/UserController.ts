@@ -158,6 +158,26 @@ export class UsersController {
     });
   }
 
+  @Patch(':id/lock')
+  @ApiOperation({
+    summary: 'Admin locks an user',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The user id',
+  })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async lockUserById(@Param('id') id: string) {
+    await this.usersUseCases.lockUser(parseInt(id, 10));
+
+    return new SuccessResponseDTO({
+      message: 'User locked',
+      metadata: {},
+    });
+  }
+
   @Get('/test/ci-cd')
   @ApiOperation({
     summary: 'Test route',
