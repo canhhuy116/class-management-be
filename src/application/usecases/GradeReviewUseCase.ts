@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IAssignmentRepository } from 'application/ports/IAssignmentRepository';
+import { IClassRepository } from 'application/ports/IClassRepository';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
 import { IGradeRepository } from 'application/ports/IGradeRepository';
 import { IGradeReviewRepository } from 'application/ports/IGradeReviewRepository';
@@ -22,6 +23,7 @@ export class GradeReviewUseCase {
     private readonly assignmentRepository: IAssignmentRepository,
     private readonly gradeComposition: IGradeCompositionRepository,
     private readonly notificationService: INotificationService,
+    private readonly classRepository: IClassRepository,
   ) {}
 
   async studentRequestReview(
@@ -121,42 +123,59 @@ export class GradeReviewUseCase {
     );
   }
 
-  async teacherViewGradeReview(classId: number, currentUserId: number) {
+  async teacherViewGradeReview(currentUserId: number) {
     this.logger.log('Teacher view grade review');
 
-    const gradeCompositions = await this.gradeComposition.find({
-      where: {
-        classId,
-      },
+    const classes = await this.classRepository.find({
+      relations: ['teachers.teacher', 'students.student'],
     });
 
-    const assignmentIds: number[] = [];
+    const classIds = classes
+      .filter((classDetail) => classDetail.isTeacher(currentUserId))
+      .map((classDetail) => classDetail.id);
 
-    for (const gradeComposition of gradeCompositions) {
-      const assignments = await this.assignmentRepository.find({
+    const result = [];
+
+    for (const classId of classIds) {
+      const gradeCompositions = await this.gradeComposition.find({
         where: {
-          gradeCompositionId: gradeComposition.id,
+          classId,
         },
       });
 
-      for (const assignment of assignments) {
-        assignmentIds.push(assignment.id);
+      const assignmentIds: number[] = [];
+
+      for (const gradeComposition of gradeCompositions) {
+        const assignments = await this.assignmentRepository.find({
+          where: {
+            gradeCompositionId: gradeComposition.id,
+          },
+        });
+
+        for (const assignment of assignments) {
+          assignmentIds.push(assignment.id);
+        }
       }
+
+      const gradeReviewOfUser = await this.gradeReviewRepository.find({
+        where: {
+          teacherId: currentUserId,
+          isReviewed: false,
+        },
+        relations: ['assignment'],
+      });
+
+      const gradeReviews = gradeReviewOfUser.filter((gradeReview) =>
+        assignmentIds.includes(gradeReview.assignmentId),
+      );
+
+      result.push({
+        classId,
+        reviews: gradeReviews,
+      });
     }
 
-    const gradeReviewOfUser = await this.gradeReviewRepository.find({
-      where: {
-        teacherId: currentUserId,
-        isReviewed: false,
-      },
-      relations: ['assignment'],
-    });
-
-    const gradeReviews = gradeReviewOfUser.filter((gradeReview) =>
-      assignmentIds.includes(gradeReview.assignmentId),
-    );
-
-    return gradeReviews;
+    return result;
   }
 
   async teacherReviewGradeReview(

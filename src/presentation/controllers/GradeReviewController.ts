@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { GradeReviewUseCase } from 'application/usecases/GradeReviewUseCase';
+import { GradeReview } from 'domain/models/GradeReview';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
@@ -66,28 +67,21 @@ export class GradeReviewController {
   @ApiOperation({
     summary: 'Get all grade review of teacher',
   })
-  @ApiHeader({
-    name: 'class-id',
-    description: 'Class ID',
-    required: true,
-  })
-  @UseGuards(TeacherRoleGuard)
-  async getAllGradeReviewOfTeacher(
-    @Headers('class-id') classId: number,
-    @Request() req: RequestWithUser,
-  ) {
+  async getAllGradeReviewOfTeacher(@Request() req: RequestWithUser) {
     const gradeReviews = await this.gradeReviewUseCase.teacherViewGradeReview(
-      classId,
       req.user.userId,
     );
 
     return new SuccessResponseDTO({
       message: 'Get all grade review successfully',
-      metadata: {
-        gradeReviews: gradeReviews.map((gradeReview) =>
-          GradeReviewVM.toViewModel(gradeReview),
-        ),
-      },
+      metadata: gradeReviews.map((gradeReview) => {
+        return {
+          classId: gradeReview.classId,
+          gradeReviews: gradeReview.reviews.map((review: GradeReview) =>
+            GradeReviewVM.toViewModel(review),
+          ),
+        };
+      }),
     });
   }
 
