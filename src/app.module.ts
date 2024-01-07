@@ -5,6 +5,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import typeorm from 'config/typeorm';
 import { setEnvironment } from 'infrastructure/environments';
+import { AdminModule } from 'infrastructure/ioc/admin.module';
 import { AuthModule } from 'infrastructure/ioc/auth.module';
 import { ClassModule } from 'infrastructure/ioc/class.module';
 import { GradeCompositionModule } from 'infrastructure/ioc/grade.composition.module';
@@ -23,6 +24,7 @@ import { HealthController } from 'infrastructure/terminus';
     GradeManagementModule,
     GradeReviewModule,
     SeederModule,
+    AdminModule,
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
