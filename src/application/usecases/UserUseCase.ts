@@ -6,6 +6,7 @@ import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
 import { INotificationService } from 'application/ports/INotificationService';
 import { IClassRepository } from 'application/ports/IClassRepository';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
+import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 
 @Injectable()
 export class UsersUseCases {
@@ -27,7 +28,9 @@ export class UsersUseCases {
   async getUserById(id: number): Promise<User> {
     this.logger.log(`Find the user: ${id}`);
 
-    const user = await this.usersRepository.findOne(id);
+    const user = await this.usersRepository.findOne({
+      where: { id },
+    });
     if (!user) throw new NotFoundException(`The user {${id}} has not found.`);
 
     return user;
@@ -35,6 +38,16 @@ export class UsersUseCases {
 
   async createUser(user: User): Promise<User> {
     this.logger.log(`Saving a user`);
+
+    const userExists = await this.usersRepository.findOne({
+      where: { email: user.email },
+    });
+
+    if (userExists)
+      throw new EntityAlreadyExistException(`The user already exists.`);
+
+    await user.hashPassword(user.password);
+
     return await this.usersRepository.save(user);
   }
 
@@ -58,6 +71,12 @@ export class UsersUseCases {
 
   async deleteUser(id: number): Promise<boolean> {
     this.logger.log(`Deleting a user: ${id}`);
+
+    const userExists = await this.usersRepository.findOne({ where: { id } });
+
+    if (!userExists)
+      throw new NotFoundException(`The user {${id}} has not found.`);
+
     const result = await this.usersRepository.delete(id);
 
     return result.affected > 0;

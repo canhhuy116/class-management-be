@@ -10,6 +10,7 @@ import {
   Patch,
   UploadedFile,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -98,6 +99,63 @@ export class UsersController {
     );
 
     return UserVM.toViewModel(newUser);
+  }
+
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Admin updates an user',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The user id',
+  })
+  @ApiOkResponse({ description: 'User updated.', type: UserVM })
+  @ApiNotFoundResponse({
+    description: 'User cannot be founded.',
+    type: NotFoundError,
+  })
+  @ApiBadRequestResponse({
+    description: 'The request object doesn`t match the expected one',
+    type: BadRequestError,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation error while updating user',
+    type: UnprocessableEntityError,
+  })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async updateUserById(
+    @Param('id') id: string,
+    @Body() updateUser: UpdateUserVM,
+  ) {
+    await this.usersUseCases.updateUser(parseInt(id, 10), updateUser);
+
+    return new SuccessResponseDTO({
+      message: 'User updated',
+      metadata: {},
+    });
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Admin deletes an user',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The user id',
+  })
+  @ApiOkResponse({ description: 'User deleted.' })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async deleteUserById(@Param('id') id: string) {
+    await this.usersUseCases.deleteUser(parseInt(id, 10));
+
+    return new SuccessResponseDTO({
+      message: 'User deleted',
+      metadata: {},
+    });
   }
 
   @Get('/test/ci-cd')
