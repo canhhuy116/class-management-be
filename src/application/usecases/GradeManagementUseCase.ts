@@ -244,11 +244,13 @@ export class GradeManagementUseCase {
       .filter((student) => student.studentId)
       .map((student) => student.studentId);
 
+    const dataMap = new Map<number, any[]>();
+    dataMap.set(0, studentIds);
+
     const buffer = await this.excelService.generateExcelTemplate(
       `Grade Assignment ${assignment.name}`,
       this.columnsGradeAssignment,
-      studentIds,
-      0,
+      dataMap,
     );
 
     return buffer;

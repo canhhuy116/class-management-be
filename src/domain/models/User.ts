@@ -72,4 +72,12 @@ export class User extends BaseModel {
   isLocked(): boolean {
     return this.isActive === false;
   }
+
+  mapStudentId(studentId: string) {
+    this.studentId = studentId;
+  }
+
+  unMapStudentId() {
+    this.studentId = null;
+  }
 }

@@ -7,8 +7,7 @@ export class ExcelService implements IExcelService {
   async generateExcelTemplate(
     name: string,
     columns: string[],
-    data?: any[],
-    indexColumnFillData?: number,
+    dataMap?: Map<number, any[]>,
   ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(name);
@@ -18,14 +17,14 @@ export class ExcelService implements IExcelService {
       key: column,
     }));
 
-    if (data != undefined && indexColumnFillData != undefined) {
-      data.forEach((item) => {
-        worksheet.addRow({ [columns[indexColumnFillData]]: item });
+    if (dataMap !== undefined) {
+      dataMap.forEach((data, index) => {
+        const dataColumn = worksheet.getColumn(index + 1);
+        dataColumn.values = [columns[index], ...data];
       });
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
-
     return Buffer.from(buffer);
   }
 

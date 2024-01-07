@@ -8,6 +8,8 @@ import { StorageModule } from './storage.module';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { StudentRepository } from 'infrastructure/database/repository/StudentRepository';
 import { NotificationModule } from './notification.module';
+import { IExcelService } from 'application/ports/IExcelService';
+import { ExcelService } from 'infrastructure/service/ExcelService';
 
 @Module({
   imports: [StorageModule, NotificationModule],
@@ -16,6 +18,7 @@ import { NotificationModule } from './notification.module';
     UsersUseCases,
     { provide: IUsersRepository, useClass: UsersRepository },
     { provide: IStudentRepository, useClass: StudentRepository },
+    { provide: IExcelService, useClass: ExcelService },
   ],
 })
 export class UsersModule {}

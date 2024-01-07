@@ -4,19 +4,26 @@ import { User } from 'domain/models/User';
 import { IStorageService } from 'application/ports/IStorageService';
 import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
 import { INotificationService } from 'application/ports/INotificationService';
-import { IClassRepository } from 'application/ports/IClassRepository';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
+import { IExcelService } from 'application/ports/IExcelService';
 
 @Injectable()
 export class UsersUseCases {
   private readonly logger = new Logger(UsersUseCases.name);
+  private readonly columnExcelMapStudentId = [
+    'User ID',
+    'Name',
+    'Email',
+    'Student ID',
+  ];
 
   constructor(
     private readonly usersRepository: IUsersRepository,
     private readonly storageService: IStorageService,
     private readonly notification: INotificationService,
     private readonly studentRepository: IStudentRepository,
+    private readonly excelService: IExcelService,
   ) {}
 
   async getUsers(): Promise<User[]> {
@@ -95,6 +102,86 @@ export class UsersUseCases {
     const result = await this.usersRepository.update(id, userExists);
 
     return result.affected > 0;
+  }
+
+  async mapStudentIdToUser(id: number, studentId: string): Promise<boolean> {
+    this.logger.log(`Mapping studentId to a user: ${id}`);
+
+    const userExists = await this.usersRepository.findOne({ where: { id } });
+
+    if (!userExists)
+      throw new NotFoundException(`The user {${id}} has not found.`);
+
+    userExists.mapStudentId(studentId);
+
+    const result = await this.usersRepository.update(id, userExists);
+
+    return result.affected > 0;
+  }
+
+  async unMapStudentIdToUser(id: number): Promise<boolean> {
+    this.logger.log(`unMapping studentId to a user: ${id}`);
+
+    const userExists = await this.usersRepository.findOne({ where: { id } });
+
+    if (!userExists)
+      throw new NotFoundException(`The user {${id}} has not found.`);
+
+    userExists.unMapStudentId();
+
+    const result = await this.usersRepository.update(id, userExists);
+
+    return result.affected > 0;
+  }
+
+  async exportUsersToExcel(): Promise<Buffer> {
+    this.logger.log(`Exporting users to excel`);
+
+    const users = await this.usersRepository.find({ loadEagerRelations: true });
+
+    const userIds = users.map((user) => user.id);
+    const emails = users.map((user) => user.email);
+    const names = users.map((user) => user.name);
+
+    const dataMap = new Map<number, any[]>();
+    dataMap.set(0, userIds);
+    dataMap.set(1, names);
+    dataMap.set(2, emails);
+
+    return await this.excelService.generateExcelTemplate(
+      'Users',
+      this.columnExcelMapStudentId,
+      dataMap,
+    );
+  }
+
+  async mapStudentIdToUserWithExcel(file: Express.Multer.File) {
+    this.logger.log(`Mapping studentId to a user with excel file`);
+
+    const buffer: Buffer = file.buffer;
+
+    const students = await this.excelService.excelToEntities(
+      buffer,
+      this.columnExcelMapStudentId,
+    );
+
+    const studentsWithUser = await Promise.all(
+      students.map(async (student) => {
+        const user = await this.usersRepository.findOne({
+          where: { id: student[this.columnExcelMapStudentId[0]] },
+        });
+
+        if (!user) throw new NotFoundException(`The user has not found.`);
+
+        user.mapStudentId(student[this.columnExcelMapStudentId[3]]);
+
+        return user;
+      }),
+    );
+
+    await this.usersRepository.save(studentsWithUser);
+
+    return true;
   }
 
   async updateAvatar(id: number, avatar: Express.Multer.File) {

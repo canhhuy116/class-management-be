@@ -11,7 +11,9 @@ import {
   UploadedFile,
   UseInterceptors,
   Delete,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -174,6 +176,109 @@ export class UsersController {
 
     return new SuccessResponseDTO({
       message: 'User locked',
+      metadata: {},
+    });
+  }
+
+  @Patch(':id/map-studentId')
+  @ApiOperation({
+    summary: 'Admin maps studentId to an user',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The user id',
+  })
+  @ApiBody({
+    description: 'The studentId to map',
+    schema: {
+      type: 'object',
+      properties: {
+        studentId: {
+          type: 'string',
+        },
+      },
+    },
+  })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async mapStudentIdToUserById(
+    @Param('id') id: string,
+    @Body() studentId: { studentId: string },
+  ) {
+    await this.usersUseCases.mapStudentIdToUser(
+      parseInt(id, 10),
+      studentId.studentId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'StudentId mapped',
+      metadata: {},
+    });
+  }
+
+  @Get('export/excel')
+  @ApiOperation({
+    summary: 'Admin exports users to excel file',
+  })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async exportUsersToExcel(@Res() res: Response) {
+    const buffer = await this.usersUseCases.exportUsersToExcel();
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader('Content-Disposition', 'attachment; filename=users.xlsx');
+    res.send(buffer);
+  }
+
+  @Patch(':id/unmap-studentId')
+  @ApiOperation({
+    summary: 'Admin unmaps studentId to an user',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'The user id',
+  })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async unMapStudentIdToUserById(@Param('id') id: string) {
+    await this.usersUseCases.unMapStudentIdToUser(parseInt(id, 10));
+
+    return new SuccessResponseDTO({
+      message: 'StudentId unmapped',
+      metadata: {},
+    });
+  }
+
+  @Patch('/map-studentId-excel')
+  @ApiOperation({
+    summary: 'Admin maps studentId to an user with excel file',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'The excel file to map',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
+  async mapStudentIdToUserWithExcel(@UploadedFile() file: Express.Multer.File) {
+    await this.usersUseCases.mapStudentIdToUserWithExcel(file);
+
+    return new SuccessResponseDTO({
+      message: 'StudentId mapped',
       metadata: {},
     });
   }
