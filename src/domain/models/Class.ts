@@ -2,6 +2,7 @@ import { User } from './User';
 import { BaseModel } from './BaseModel';
 import { ClassTeacher } from './ClassTeacher';
 import { ClassStudent } from './ClassStudent';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class Class extends BaseModel {
   name: string;
@@ -9,6 +10,8 @@ export class Class extends BaseModel {
   ownerId: number;
 
   description?: string;
+
+  isActive: boolean;
 
   teachers?: ClassTeacher[];
 
@@ -78,4 +81,28 @@ export class Class extends BaseModel {
   findStudent(studentId: string): ClassStudent | undefined {
     return this.students?.find((student) => student?.studentId === studentId);
   }
+
+  inactive() {
+    this.isActive = false;
+  }
+
+  active() {
+    this.isActive = true;
+  }
+}
+
+export class FilterClass {
+  @ApiProperty({
+    description: 'The field to sort',
+    required: false,
+    enum: ['name', 'createdAt'],
+  })
+  sortField?: string;
+
+  @ApiProperty({
+    description: 'Sort ascending or descending',
+    required: false,
+    enum: ['ASC', 'DESC'],
+  })
+  order?: 'ASC' | 'DESC';
 }

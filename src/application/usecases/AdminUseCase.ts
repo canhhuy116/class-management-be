@@ -6,11 +6,15 @@ import { IInvitationRepository } from 'application/ports/IInvitationRepository';
 import { IMailService } from 'application/ports/IMailService';
 import { IStorageService } from 'application/ports/IStorageService';
 import { IUsersRepository } from 'application/ports/IUserRepository';
+import { contains } from 'class-validator';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
-import { Class } from 'domain/models/Class';
+import { Class, FilterClass } from 'domain/models/Class';
 import { User } from 'domain/models/User';
+import { UpsertClassVM } from 'presentation/view-model/classes/CreateClassVM';
 import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
+import { Like } from 'typeorm';
+import { Paging } from 'utils/paging';
 
 @Injectable()
 export class AdminUseCases {
@@ -189,7 +193,7 @@ export class AdminUseCases {
   async adminShowClassDetail(id: number): Promise<Class> {
     this.logger.log(`Find the class: ${id}`);
 
-    const classDetail = await this.classRepository.findOne({
+    const classDetail = await this.classRepository.findOneByAdmin({
       where: { id },
       relations: ['teachers.teacher', 'students.student'],
     });
@@ -199,5 +203,100 @@ export class AdminUseCases {
     }
 
     return classDetail;
+  }
+
+  async getClassesByAdmin(
+    paging: Paging,
+    filter?: FilterClass,
+    searchQuery?: String,
+  ): Promise<Class[]> {
+    this.logger.log(`Find all classes`);
+
+    const { page, limit } = paging;
+    const classes = await this.classRepository.findByAdmin({
+      take: limit,
+      skip: (page - 1) * limit,
+      relations: ['teachers.teacher', 'students.student'],
+      where: searchQuery ? { name: Like(`%${searchQuery}%`) } : {},
+      order: filter ? { [filter.sortField]: filter.order } : {},
+    });
+
+    paging.total = await this.classRepository.count({
+      where: searchQuery ? { name: Like(`%${searchQuery}%`) } : {},
+    });
+
+    return classes;
+  }
+
+  async updateClassByAdmin(id: number, classUpdate: UpsertClassVM) {
+    this.logger.log(`Updating a class: ${id}`);
+
+    const classExists = await this.classRepository.findOneByAdmin({
+      where: { id },
+    });
+
+    if (!classExists) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    for (const key in classUpdate) {
+      if (classUpdate[key]) classExists[key] = classUpdate[key];
+    }
+
+    const result = await this.classRepository.update(id, classExists);
+
+    return result.affected > 0;
+  }
+
+  async deleteClassByAdmin(id: number): Promise<boolean> {
+    this.logger.log(`Deleting a class: ${id}`);
+
+    const classExists = await this.classRepository.findOneByAdmin({
+      where: { id },
+    });
+
+    if (!classExists) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    const result = await this.classRepository.delete(id);
+
+    return result.affected > 0;
+  }
+
+  async inactiveClassByAdmin(id: number): Promise<boolean> {
+    this.logger.log(`Inactive a class: ${id}`);
+
+    const classExists = await this.classRepository.findOneByAdmin({
+      where: { id },
+    });
+
+    if (!classExists) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    classExists.inactive();
+
+    const result = await this.classRepository.update(id, classExists);
+
+    return result.affected > 0;
+  }
+
+  async activeClassByAdmin(id: number): Promise<boolean> {
+    this.logger.log(`Active a class: ${id}`);
+
+    const classExists = await this.classRepository.findOneByAdmin({
+      where: { id },
+    });
+
+    if (!classExists) {
+      throw new EntityNotFoundException('Class not found');
+    }
+
+    classExists.active();
+
+    const result = await this.classRepository.update(id, classExists);
+
+    return result.affected > 0;
   }
 }

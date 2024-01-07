@@ -38,7 +38,7 @@ import { SuccessInterceptor } from 'infrastructure/interceptor/success.intercept
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
 import { ClassVM } from 'presentation/view-model/classes/ClassVM';
-import { CreateClassVM } from 'presentation/view-model/classes/CreateClassVM';
+import { UpsertClassVM } from 'presentation/view-model/classes/CreateClassVM';
 import { InvitePeopleIntoClassVM } from 'presentation/view-model/classes/InvitePeopleIntoClassVM';
 import { TeacherAndStudentVM } from 'presentation/view-model/classes/TeacherAndStudentVM';
 import { NotFoundError } from 'rxjs';
@@ -135,10 +135,10 @@ export class ClassController {
   })
   async createClass(
     @Request() req: RequestWithUser,
-    @Body() createClass: CreateClassVM,
+    @Body() createClass: UpsertClassVM,
   ): Promise<SuccessResponseDTO> {
     const newClass = await this.classUseCases.createClass(
-      CreateClassVM.fromViewModel(createClass, req.user.userId),
+      UpsertClassVM.fromViewModel(createClass, req.user.userId),
     );
 
     return new SuccessResponseDTO({

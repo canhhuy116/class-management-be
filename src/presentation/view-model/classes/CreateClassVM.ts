@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Class } from 'domain/models/Class';
 
-export class CreateClassVM {
+export class UpsertClassVM {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -19,7 +19,7 @@ export class CreateClassVM {
   })
   description: string;
 
-  static fromViewModel(vm: CreateClassVM, ownerId: number): Class {
+  static fromViewModel(vm: UpsertClassVM, ownerId: number): Class {
     return new Class(vm.name, ownerId, vm.description);
   }
 }

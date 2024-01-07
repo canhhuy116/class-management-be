@@ -66,6 +66,8 @@ export class ClassVM {
   })
   owner: UserVM;
 
+  isActive: boolean;
+
   static toViewModel(classEntity: Class): ClassVM {
     const owner = classEntity.teachers.find(
       (classTeacher) => classTeacher.teacher.id === classEntity.ownerId,
@@ -89,5 +91,10 @@ export class ClassVM {
       },
       { excludeExtraneousValues: true },
     );
+  }
+
+  withIsActive(isActive: boolean): ClassVM {
+    this.isActive = isActive;
+    return this;
   }
 }

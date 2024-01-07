@@ -19,6 +19,11 @@ export const ClassEntity = new EntitySchema<Class>({
       length: 100,
       nullable: true,
     },
+    isActive: {
+      type: Boolean,
+      name: 'is_active',
+      default: true,
+    },
     ownerId: {
       type: Number,
       name: 'owner_id',

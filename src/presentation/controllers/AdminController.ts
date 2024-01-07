@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -16,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
@@ -23,6 +25,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
@@ -38,7 +41,11 @@ import { NotFoundError } from 'rxjs';
 import { Response } from 'express';
 import { ClassVM } from 'presentation/view-model/classes/ClassVM';
 import { AdminUseCases } from 'application/usecases/AdminUseCase';
+import { Paging } from 'utils/paging';
+import { FilterClass } from 'domain/models/Class';
+import { UpsertClassVM } from 'presentation/view-model/classes/CreateClassVM';
 
+@ApiBearerAuth()
 @ApiTags('Admin')
 @Controller('api/v1/admin/users')
 @UseInterceptors(SuccessInterceptor)
@@ -47,12 +54,12 @@ import { AdminUseCases } from 'application/usecases/AdminUseCase';
 export class AdminUsersController {
   constructor(private readonly adminUseCase: AdminUseCases) {}
 
-  @Get(':id')
+  @Get(':userId')
   @ApiOperation({
     summary: 'Find one user by id',
   })
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     type: Number,
     description: 'The user id',
   })
@@ -61,8 +68,8 @@ export class AdminUsersController {
     description: 'User cannot be founded.',
     type: NotFoundError,
   })
-  async get(@Param('id') id: string): Promise<UserVM> {
-    const user = await this.adminUseCase.getUserById(parseInt(id, 10));
+  async get(@Param('userId') userId: string): Promise<UserVM> {
+    const user = await this.adminUseCase.getUserById(parseInt(userId, 10));
 
     return UserVM.toViewModel(user);
   }
@@ -99,12 +106,12 @@ export class AdminUsersController {
     return UserVM.toViewModel(newUser);
   }
 
-  @Put(':id')
+  @Put(':userId')
   @ApiOperation({
     summary: 'Admin updates an user',
   })
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     type: Number,
     description: 'The user id',
   })
@@ -122,10 +129,10 @@ export class AdminUsersController {
     type: UnprocessableEntityError,
   })
   async updateUserById(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() updateUser: UpdateUserVM,
   ) {
-    await this.adminUseCase.updateUser(parseInt(id, 10), updateUser);
+    await this.adminUseCase.updateUser(parseInt(userId, 10), updateUser);
 
     return new SuccessResponseDTO({
       message: 'User updated',
@@ -133,18 +140,18 @@ export class AdminUsersController {
     });
   }
 
-  @Delete(':id')
+  @Delete(':userId')
   @ApiOperation({
     summary: 'Admin deletes an user',
   })
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     type: Number,
     description: 'The user id',
   })
   @ApiOkResponse({ description: 'User deleted.' })
-  async deleteUserById(@Param('id') id: string) {
-    await this.adminUseCase.deleteUser(parseInt(id, 10));
+  async deleteUserById(@Param('userId') userId: string) {
+    await this.adminUseCase.deleteUser(parseInt(userId, 10));
 
     return new SuccessResponseDTO({
       message: 'User deleted',
@@ -152,17 +159,17 @@ export class AdminUsersController {
     });
   }
 
-  @Patch(':id/lock')
+  @Patch(':userId/lock')
   @ApiOperation({
     summary: 'Admin locks an user',
   })
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     type: Number,
     description: 'The user id',
   })
-  async lockUserById(@Param('id') id: string) {
-    await this.adminUseCase.lockUser(parseInt(id, 10));
+  async lockUserById(@Param('userId') userId: string) {
+    await this.adminUseCase.lockUser(parseInt(userId, 10));
 
     return new SuccessResponseDTO({
       message: 'User locked',
@@ -170,12 +177,12 @@ export class AdminUsersController {
     });
   }
 
-  @Patch(':id/map-studentId')
+  @Patch(':userId/map-studentId')
   @ApiOperation({
     summary: 'Admin maps studentId to an user',
   })
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     type: Number,
     description: 'The user id',
   })
@@ -191,11 +198,11 @@ export class AdminUsersController {
     },
   })
   async mapStudentIdToUserById(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() studentId: { studentId: string },
   ) {
     await this.adminUseCase.mapStudentIdToUser(
-      parseInt(id, 10),
+      parseInt(userId, 10),
       studentId.studentId,
     );
 
@@ -220,17 +227,17 @@ export class AdminUsersController {
     res.send(buffer);
   }
 
-  @Patch(':id/unmap-studentId')
+  @Patch(':userId/unmap-studentId')
   @ApiOperation({
     summary: 'Admin unmaps studentId to an user',
   })
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     type: Number,
     description: 'The user id',
   })
-  async unMapStudentIdToUserById(@Param('id') id: string) {
-    await this.adminUseCase.unMapStudentIdToUser(parseInt(id, 10));
+  async unMapStudentIdToUserById(@Param('userId') userId: string) {
+    await this.adminUseCase.unMapStudentIdToUser(parseInt(userId, 10));
 
     return new SuccessResponseDTO({
       message: 'StudentId unmapped',
@@ -266,6 +273,7 @@ export class AdminUsersController {
   }
 }
 
+@ApiBearerAuth()
 @ApiTags('Admin')
 @Controller('api/v1/admin/class')
 @UseInterceptors(SuccessInterceptor)
@@ -274,12 +282,12 @@ export class AdminUsersController {
 export class AdminClassController {
   constructor(private readonly adminUseCases: AdminUseCases) {}
 
-  @Get(':id')
+  @Get(':classId')
   @ApiOperation({
     summary: 'Show class detail',
   })
   @ApiParam({
-    name: 'id',
+    name: 'classId',
     type: Number,
     description: 'The class id',
   })
@@ -289,15 +297,135 @@ export class AdminClassController {
     type: NotFoundError,
   })
   async showClassDetailByAdmin(
-    @Param('id') id: string,
+    @Param('classId') classId: string,
   ): Promise<SuccessResponseDTO> {
     const classDetail = await this.adminUseCases.adminShowClassDetail(
-      parseInt(id, 10),
+      parseInt(classId, 10),
     );
 
     return new SuccessResponseDTO({
       message: 'Class founded',
-      metadata: ClassVM.toViewModel(classDetail),
+      metadata: ClassVM.toViewModel(classDetail).withIsActive(
+        classDetail.isActive,
+      ),
+    });
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Get all classes',
+  })
+  @ApiQuery({
+    name: 'search',
+    type: String,
+    required: false,
+    description: 'Search by class name',
+  })
+  async getClassesByAdmin(
+    @Query() pagingRequest: Paging,
+    @Query() filter: FilterClass,
+    @Query('search') searchQuery?: string,
+  ): Promise<SuccessResponseDTO> {
+    const { page, limit } = pagingRequest;
+    const paging = new Paging(page, limit);
+
+    paging.fullFill();
+
+    const classes = await this.adminUseCases.getClassesByAdmin(
+      paging,
+      filter,
+      searchQuery,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Classes founded',
+      metadata: {
+        classes: classes.map((classEntity) =>
+          ClassVM.toViewModel(classEntity).withIsActive(classEntity.isActive),
+        ),
+        paging,
+      },
+    });
+  }
+
+  @Put(':classId')
+  @ApiOperation({
+    summary: 'Update a class',
+  })
+  @ApiParam({
+    name: 'classId',
+    type: Number,
+    description: 'The class id',
+  })
+  async updateClassByAdmin(
+    @Param('classId') classId: number,
+    @Body() classUpdate: UpsertClassVM,
+  ): Promise<SuccessResponseDTO> {
+    await this.adminUseCases.updateClassByAdmin(classId, classUpdate);
+
+    return new SuccessResponseDTO({
+      message: 'Class updated',
+      metadata: {},
+    });
+  }
+
+  @Delete(':classId')
+  @ApiOperation({
+    summary: 'Delete a class',
+  })
+  @ApiParam({
+    name: 'classId',
+    type: Number,
+    description: 'The class id',
+  })
+  async deleteClassByAdmin(
+    @Param('classId') classId: number,
+  ): Promise<SuccessResponseDTO> {
+    await this.adminUseCases.deleteClassByAdmin(classId);
+
+    return new SuccessResponseDTO({
+      message: 'Class deleted',
+      metadata: {},
+    });
+  }
+
+  @Patch(':classId/inactive')
+  @ApiOperation({
+    summary: 'Inactive a class',
+  })
+  @ApiParam({
+    name: 'classId',
+    type: Number,
+    description: 'The class id',
+  })
+  async inactiveClassByAdmin(
+    @Param('classId') classId: string,
+  ): Promise<SuccessResponseDTO> {
+    await this.adminUseCases.inactiveClassByAdmin(parseInt(classId, 10));
+
+    return new SuccessResponseDTO({
+      message: 'Class inactived',
+      metadata: {},
+    });
+  }
+
+  @Patch(':classId/active')
+  @ApiOperation({
+    summary: 'Active a class',
+  })
+  @ApiParam({
+    name: 'classId',
+    type: Number,
+    description: 'The class id',
+  })
+  async activeClassByAdmin(
+    @Param('classId') classId: string,
+  ): Promise<SuccessResponseDTO> {
+    await this.adminUseCases.activeClassByAdmin(parseInt(classId, 10));
+
+    return new SuccessResponseDTO({
+      message: 'Class actived',
+      metadata: {},
     });
   }
 }
