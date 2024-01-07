@@ -35,7 +35,7 @@ export class GradeCompositionUseCase {
     this.logger.log(`Showing grade composition`);
 
     const classEntity = await this.classRepository.findOne({
-      where: { id: classId },
+      where: { id: classId, isActive: true },
     });
 
     if (!classEntity) {

@@ -193,7 +193,7 @@ export class AdminUseCases {
   async adminShowClassDetail(id: number): Promise<Class> {
     this.logger.log(`Find the class: ${id}`);
 
-    const classDetail = await this.classRepository.findOneByAdmin({
+    const classDetail = await this.classRepository.findOne({
       where: { id },
       relations: ['teachers.teacher', 'students.student'],
     });
@@ -213,7 +213,7 @@ export class AdminUseCases {
     this.logger.log(`Find all classes`);
 
     const { page, limit } = paging;
-    const classes = await this.classRepository.findByAdmin({
+    const classes = await this.classRepository.find({
       take: limit,
       skip: (page - 1) * limit,
       relations: ['teachers.teacher', 'students.student'],
@@ -231,7 +231,7 @@ export class AdminUseCases {
   async updateClassByAdmin(id: number, classUpdate: UpsertClassVM) {
     this.logger.log(`Updating a class: ${id}`);
 
-    const classExists = await this.classRepository.findOneByAdmin({
+    const classExists = await this.classRepository.findOne({
       where: { id },
     });
 
@@ -251,7 +251,7 @@ export class AdminUseCases {
   async deleteClassByAdmin(id: number): Promise<boolean> {
     this.logger.log(`Deleting a class: ${id}`);
 
-    const classExists = await this.classRepository.findOneByAdmin({
+    const classExists = await this.classRepository.findOne({
       where: { id },
     });
 
@@ -267,7 +267,7 @@ export class AdminUseCases {
   async inactiveClassByAdmin(id: number): Promise<boolean> {
     this.logger.log(`Inactive a class: ${id}`);
 
-    const classExists = await this.classRepository.findOneByAdmin({
+    const classExists = await this.classRepository.findOne({
       where: { id },
     });
 
@@ -285,7 +285,7 @@ export class AdminUseCases {
   async activeClassByAdmin(id: number): Promise<boolean> {
     this.logger.log(`Active a class: ${id}`);
 
-    const classExists = await this.classRepository.findOneByAdmin({
+    const classExists = await this.classRepository.findOne({
       where: { id },
     });
 

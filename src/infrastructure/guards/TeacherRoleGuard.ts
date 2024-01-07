@@ -21,7 +21,7 @@ export class TeacherRoleGuard implements CanActivate {
     }
 
     const currentClass = await this.classRepository.findOne({
-      where: { id: currentClassId },
+      where: { id: currentClassId, isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 

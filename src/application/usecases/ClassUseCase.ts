@@ -29,6 +29,7 @@ export class ClassUseCases {
     this.logger.log('Find all classes');
 
     const classes = await this.classRepository.find({
+      where: { isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
@@ -41,7 +42,7 @@ export class ClassUseCases {
     this.logger.log(`Find the class: ${id}`);
 
     const classDetail = await this.classRepository.findOne({
-      where: { id },
+      where: { id, isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
@@ -71,7 +72,9 @@ export class ClassUseCases {
 
   async updateClass(classDetail: Class): Promise<boolean> {
     this.logger.log(`Updating a class: ${classDetail.id}`);
-    const classExists = await this.classRepository.findOne(classDetail.id);
+    const classExists = await this.classRepository.findOne({
+      where: { id: classDetail.id, isActive: true },
+    });
 
     if (!classExists) {
       throw new EntityNotFoundException('Class not found');
@@ -99,7 +102,7 @@ export class ClassUseCases {
     this.logger.log(`Find the class: ${id}`);
 
     const classDetail = await this.classRepository.findOne({
-      where: { id },
+      where: { id, isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
@@ -118,7 +121,7 @@ export class ClassUseCases {
     this.logger.log(`Get invitation code from class: ${classId}`);
 
     const classDetail = await this.classRepository.findOne({
-      where: { id: classId },
+      where: { id: classId, isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
@@ -170,7 +173,7 @@ export class ClassUseCases {
     }
 
     const findClass = await this.classRepository.findOne({
-      where: { id: invitation.classId },
+      where: { id: invitation.classId, isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
@@ -236,7 +239,7 @@ export class ClassUseCases {
     this.logger.log(`Invite ${role.toLowerCase()} to class: ${classId}`);
 
     const classDetail = await this.classRepository.findOne({
-      where: { id: classId },
+      where: { id: classId, isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
@@ -300,7 +303,7 @@ export class ClassUseCases {
     this.logger.log(`Upload background image to class: ${classId}`);
 
     const classDetail = await this.classRepository.findOne({
-      where: { id: classId },
+      where: { id: classId, isActive: true },
     });
 
     if (!classDetail) {
@@ -320,6 +323,7 @@ export class ClassUseCases {
     this.logger.log(`Get classes with role of user: ${currentUserId}`);
 
     const classes = await this.classRepository.find({
+      where: { isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 

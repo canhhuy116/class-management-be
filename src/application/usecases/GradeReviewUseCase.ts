@@ -127,6 +127,7 @@ export class GradeReviewUseCase {
     this.logger.log('Teacher view grade review');
 
     const classes = await this.classRepository.find({
+      where: { isActive: true },
       relations: ['teachers.teacher', 'students.student'],
     });
 
