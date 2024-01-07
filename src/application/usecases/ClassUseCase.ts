@@ -9,7 +9,7 @@ import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExis
 import { EntityNotFoundException } from 'domain/exceptions/EntityNotFoundException';
 import { Class } from 'domain/models/Class';
 import { Invitation } from 'domain/models/Invitation';
-import { Role } from 'domain/models/Role';
+import { RoleClass } from 'domain/models/Role';
 import { generateRandomString } from 'utils/random';
 
 @Injectable()
@@ -143,7 +143,7 @@ export class ClassUseCases {
         classDetail.ownerId,
         null,
         classId,
-        Role.STUDENT,
+        RoleClass.STUDENT,
       );
       const newInvitationCode =
         await this.invitationRepository.save(newInvitation);
@@ -188,7 +188,7 @@ export class ClassUseCases {
 
     if (currentUser.studentId) studentId = currentUser.studentId;
 
-    if (invitation.role === Role.STUDENT && !studentId) {
+    if (invitation.role === RoleClass.STUDENT && !studentId) {
       throw new ForbiddenException(
         'Student ID is required to join as a student',
       );
@@ -203,7 +203,7 @@ export class ClassUseCases {
       );
     }
 
-    if (invitation.role === Role.STUDENT) {
+    if (invitation.role === RoleClass.STUDENT) {
       const studentExists = findClass.findStudent(studentId);
 
       if (studentExists) {
@@ -231,7 +231,7 @@ export class ClassUseCases {
     classId: number,
     currentUserId: number,
     email: string,
-    role: Role,
+    role: RoleClass,
   ) {
     this.logger.log(`Invite ${role.toLowerCase()} to class: ${classId}`);
 

@@ -1,6 +1,7 @@
 import { hash } from 'bcrypt';
 import { DomainException } from '../exceptions/DomainException';
 import { BaseModel } from './BaseModel';
+import { RoleSystem } from './Role';
 
 export class User extends BaseModel {
   name: string;
@@ -8,6 +9,8 @@ export class User extends BaseModel {
   email: string;
 
   password?: string;
+
+  role: string;
 
   phoneNumber?: string;
 
@@ -51,5 +54,14 @@ export class User extends BaseModel {
   async hashPassword(password: string): Promise<void> {
     const hashedPassword = await hash(password, User.SALT_ROUNDS);
     this.password = hashedPassword;
+  }
+
+  belongsToAdmin() {
+    this.isConfirmed = true;
+    this.role = RoleSystem.ADMIN;
+  }
+
+  isAdmin(): boolean {
+    return this.role === RoleSystem.ADMIN;
   }
 }

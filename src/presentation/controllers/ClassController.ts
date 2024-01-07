@@ -31,7 +31,7 @@ import {
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { ClassUseCases } from 'application/usecases/ClassUseCase';
-import { Role } from 'domain/models/Role';
+import { RoleClass } from 'domain/models/Role';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
@@ -235,7 +235,7 @@ export class ClassController {
       parseInt(id, 10),
       req.user.userId,
       teacherEmail.email,
-      Role.TEACHER,
+      RoleClass.TEACHER,
     );
 
     return new SuccessResponseDTO({
@@ -271,7 +271,7 @@ export class ClassController {
       parseInt(id, 10),
       req.user.userId,
       studentEmail.email,
-      Role.STUDENT,
+      RoleClass.STUDENT,
     );
 
     return new SuccessResponseDTO({

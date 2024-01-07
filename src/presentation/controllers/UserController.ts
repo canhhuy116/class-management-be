@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { UsersUseCases } from 'application/usecases/UserUseCase';
+import { AdminRoleGuard } from 'infrastructure/guards/AdminRoleGuard';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { BadRequestError } from 'presentation/errors/BadRequestError';
 import { UnprocessableEntityError } from 'presentation/errors/UnprocessableEntityError';
@@ -55,6 +56,8 @@ export class UsersController {
     description: 'User cannot be founded.',
     type: NotFoundError,
   })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
   async get(@Param('id') id: string): Promise<UserVM> {
     const user = await this.usersUseCases.getUserById(parseInt(id, 10));
 
@@ -66,6 +69,8 @@ export class UsersController {
     summary: 'Find all users',
   })
   @ApiOkResponse({ description: 'All user`s fetched.', type: [UserVM] })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
   async getAll(): Promise<UserVM[]> {
     const users = await this.usersUseCases.getUsers();
 
@@ -85,6 +90,8 @@ export class UsersController {
     description: 'Validation error while creating user',
     type: UnprocessableEntityError,
   })
+  @UseGuards(AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'))
   async createUser(@Body() createUser: CreateUserVM): Promise<UserVM> {
     const newUser = await this.usersUseCases.createUser(
       CreateUserVM.fromViewModel(createUser),

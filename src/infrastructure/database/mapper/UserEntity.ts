@@ -1,3 +1,4 @@
+import { RoleSystem } from 'domain/models/Role';
 import { BaseEntity } from './BaseEntity';
 import { User } from 'domain/models/User';
 import { EntitySchema } from 'typeorm';
@@ -20,6 +21,11 @@ export const UserEntity = new EntitySchema<User>({
       type: String,
       length: 100,
       nullable: true,
+    },
+    role: {
+      type: String,
+      length: 100,
+      default: RoleSystem.USER,
     },
     phoneNumber: {
       type: String,

@@ -10,6 +10,7 @@ import { ClassModule } from 'infrastructure/ioc/class.module';
 import { GradeCompositionModule } from 'infrastructure/ioc/grade.composition.module';
 import { GradeManagementModule } from 'infrastructure/ioc/grade.management.module';
 import { GradeReviewModule } from 'infrastructure/ioc/grade.review.module';
+import { SeederModule } from 'infrastructure/ioc/seeder.module';
 import { UsersModule } from 'infrastructure/ioc/user.module';
 import { HealthController } from 'infrastructure/terminus';
 
@@ -21,6 +22,7 @@ import { HealthController } from 'infrastructure/terminus';
     GradeCompositionModule,
     GradeManagementModule,
     GradeReviewModule,
+    SeederModule,
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,

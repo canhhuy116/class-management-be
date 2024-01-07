@@ -1,5 +1,5 @@
 import { IEntity } from 'domain/shared/IEntity';
-import { Role } from './Role';
+import { RoleClass } from './Role';
 import { BaseModel } from './BaseModel';
 
 export class Invitation extends BaseModel {
@@ -11,14 +11,14 @@ export class Invitation extends BaseModel {
 
   classId: number;
 
-  role: Role;
+  role: RoleClass;
 
   constructor(
     code: string,
     inviterId: number,
     inviteeEmail: string,
     classId: number,
-    role: Role,
+    role: RoleClass,
   ) {
     super();
     this.code = code;
