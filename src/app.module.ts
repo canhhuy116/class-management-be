@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module } from '@nestjs/common';
+import { Module, OnModuleDestroy } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import { GradeReviewModule } from 'infrastructure/ioc/grade.review.module';
 import { SeederModule } from 'infrastructure/ioc/seeder.module';
 import { UsersModule } from 'infrastructure/ioc/user.module';
 import { HealthController } from 'infrastructure/terminus';
+import { Connection } from 'typeorm';
 
 @Module({
   imports: [
@@ -42,4 +43,13 @@ import { HealthController } from 'infrastructure/terminus';
   controllers: [HealthController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements OnModuleDestroy {
+  constructor(private readonly connection: Connection) {}
+
+  onModuleDestroy() {
+    // Close the TypeORM connection when the module is destroyed (app is stopping)
+    this.connection
+      .close()
+      .then(() => console.log('TypeORM connection closed.'));
+  }
+}
