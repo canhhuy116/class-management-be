@@ -34,7 +34,14 @@ export class UserVM {
   @Expose()
   avatar?: string;
 
+  @Expose()
   studentId?: string;
+
+  @Expose()
+  role?: string;
+
+  @Expose()
+  isActive?: boolean;
 
   constructor(partial: Partial<UserVM>) {
     Object.assign(this, partial);
