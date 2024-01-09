@@ -12,6 +12,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Headers,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -21,6 +22,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiHeader,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -186,6 +188,11 @@ export class AdminUsersController {
     type: Number,
     description: 'The user id',
   })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
   @ApiBody({
     description: 'The studentId to map',
     schema: {
@@ -199,11 +206,13 @@ export class AdminUsersController {
   })
   async mapStudentIdToUserById(
     @Param('userId') userId: string,
-    @Body() studentId: { studentId: string },
+    @Body('studentId') studentId: string,
+    @Headers('class-id') classId: number,
   ) {
     await this.adminUseCase.mapStudentIdToUser(
       parseInt(userId, 10),
-      studentId.studentId,
+      studentId,
+      classId,
     );
 
     return new SuccessResponseDTO({
@@ -236,8 +245,16 @@ export class AdminUsersController {
     type: Number,
     description: 'The user id',
   })
-  async unMapStudentIdToUserById(@Param('userId') userId: string) {
-    await this.adminUseCase.unMapStudentIdToUser(parseInt(userId, 10));
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  async unMapStudentIdToUserById(
+    @Param('userId') userId: string,
+    @Headers('class-id') classId: number,
+  ) {
+    await this.adminUseCase.unMapStudentIdToUser(parseInt(userId, 10), classId);
 
     return new SuccessResponseDTO({
       message: 'StudentId unmapped',

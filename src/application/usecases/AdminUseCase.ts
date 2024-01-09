@@ -5,6 +5,7 @@ import { IExcelService } from 'application/ports/IExcelService';
 import { IInvitationRepository } from 'application/ports/IInvitationRepository';
 import { IMailService } from 'application/ports/IMailService';
 import { IStorageService } from 'application/ports/IStorageService';
+import { IStudentRepository } from 'application/ports/IStudentRepository';
 import { IUsersRepository } from 'application/ports/IUserRepository';
 import { contains } from 'class-validator';
 import { EntityAlreadyExistException } from 'domain/exceptions/EntityAlreadyExistException';
@@ -30,6 +31,7 @@ export class AdminUseCases {
     private readonly usersRepository: IUsersRepository,
     private readonly classRepository: IClassRepository,
     private readonly excelService: IExcelService,
+    private readonly studentRepository: IStudentRepository,
   ) {}
 
   async getUsers(): Promise<User[]> {
@@ -110,7 +112,11 @@ export class AdminUseCases {
     return result.affected > 0;
   }
 
-  async mapStudentIdToUser(id: number, studentId: string): Promise<boolean> {
+  async mapStudentIdToUser(
+    id: number,
+    studentId: string,
+    classId: number,
+  ): Promise<boolean> {
     this.logger.log(`Mapping studentId to a user: ${id}`);
 
     const userExists = await this.usersRepository.findOne({ where: { id } });
@@ -118,14 +124,37 @@ export class AdminUseCases {
     if (!userExists)
       throw new NotFoundException(`The user {${id}} has not found.`);
 
-    userExists.mapStudentId(studentId);
+    const findStudents = await this.studentRepository.find({
+      where: { classId },
+    });
 
-    const result = await this.usersRepository.update(id, userExists);
+    const studentExists = findStudents.find(
+      (student) => student.studentId === studentId,
+    );
+
+    if (studentExists)
+      throw new EntityAlreadyExistException(
+        `The student ${studentId} already exists.`,
+      );
+
+    const userInClass = findStudents.find((student) => student.userId === id);
+
+    if (!userInClass)
+      throw new NotFoundException(
+        `The user {${userExists.name} is not in the class.`,
+      );
+
+    userInClass.studentId = studentId;
+
+    const result = await this.studentRepository.update(
+      userInClass.id,
+      userInClass,
+    );
 
     return result.affected > 0;
   }
 
-  async unMapStudentIdToUser(id: number): Promise<boolean> {
+  async unMapStudentIdToUser(id: number, classId: number): Promise<boolean> {
     this.logger.log(`unMapping studentId to a user: ${id}`);
 
     const userExists = await this.usersRepository.findOne({ where: { id } });
@@ -133,9 +162,22 @@ export class AdminUseCases {
     if (!userExists)
       throw new NotFoundException(`The user {${id}} has not found.`);
 
-    userExists.unMapStudentId();
+    const findStudents = await this.studentRepository.find({
+      where: { classId, userId: id },
+    });
 
-    const result = await this.usersRepository.update(id, userExists);
+    if (findStudents.length !== 1) {
+      throw new NotFoundException(
+        `The user {${userExists.name} is not in the class.`,
+      );
+    }
+
+    findStudents[0].studentId = null;
+
+    const result = await this.studentRepository.update(
+      findStudents[0].id,
+      findStudents[0],
+    );
 
     return result.affected > 0;
   }

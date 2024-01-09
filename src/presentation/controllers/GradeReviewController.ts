@@ -147,16 +147,18 @@ export class GradeReviewController {
     @Request() req: RequestWithUser,
     @Query('grade-review-id') gradeReviewId: number,
   ) {
-    const gradeReview =
-      await this.gradeReviewUseCase.studentViewReviewOfTeacher(
-        req.user.userId,
-        gradeReviewId,
-      );
+    const gradeReview = await this.gradeReviewUseCase.viewGradeReviewDetail(
+      req.user.userId,
+      gradeReviewId,
+    );
 
     return new SuccessResponseDTO({
       message: 'Get detail grade review successfully',
       metadata: {
-        gradeReview,
+        gradeReview: GradeReviewVM.toViewModel(gradeReview.info),
+        comments: gradeReview.comments.map((comment: GradeReviewComment) =>
+          GradeReviewCommentVM.toViewModel(comment),
+        ),
       },
     });
   }

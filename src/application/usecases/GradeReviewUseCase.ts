@@ -180,7 +180,11 @@ export class GradeReviewUseCase {
             (studentDetail) => studentDetail.studentId == gradeReview.studentId,
           );
 
-        gradeReview['avatar'] = student.student ? student.student.avatar : null;
+        gradeReview['avatar'] = student
+          ? student.student
+            ? student.student.avatar
+            : null
+          : null;
       }
 
       result.push({
@@ -390,16 +394,14 @@ export class GradeReviewUseCase {
     );
   }
 
-  async studentViewReviewOfTeacher(
-    currentUserId: number,
-    gradeReviewId: number,
-  ) {
+  async viewGradeReviewDetail(currentUserId: number, gradeReviewId: number) {
     this.logger.log('Student view review of teacher');
 
     const gradeReview = await this.gradeReviewRepository.findOne({
       where: {
         id: gradeReviewId,
       },
+      relations: ['assignment'],
     });
 
     if (!gradeReview) {
@@ -465,8 +467,8 @@ export class GradeReviewUseCase {
     }));
 
     return {
-      gradeReviewInfo,
-      commentsInfo,
+      info: gradeReview,
+      comments,
     };
   }
 }
