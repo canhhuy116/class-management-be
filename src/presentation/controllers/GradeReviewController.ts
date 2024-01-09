@@ -151,6 +151,8 @@ export class GradeReviewController {
     return new SuccessResponseDTO({
       message: 'Get detail grade review successfully',
       metadata: {
+        className: gradeReview['className'],
+        nameOfStudent: gradeReview['nameOfStudent'],
         gradeReview: GradeReviewVM.toViewModel(gradeReview.info),
         comments: gradeReview.comments.map((comment: GradeReviewComment) =>
           GradeReviewCommentVM.toViewModel(comment),

@@ -439,9 +439,33 @@ export class GradeReviewUseCase {
       throw new EntityNotFoundException('Class not found');
     }
 
-    if (!findClass.hasMember(currentUserId)) {
-      throw new EntityNotFoundException('You are not in this class');
+    const student = findClass.students.find(
+      (studentDetail) => studentDetail.studentId == gradeReview.studentId,
+    );
+
+    if (!student) {
+      throw new EntityNotFoundException('Student not found');
     }
+
+    if (
+      gradeReview.teacherId != currentUserId &&
+      student.userId != currentUserId
+    ) {
+      throw new EntityNotFoundException('You are not in this grade review');
+    }
+
+    gradeReview['avatar'] = student
+      ? student.student
+        ? student.student.avatar
+        : null
+      : null;
+
+    gradeReview['className'] = findClass.name;
+    gradeReview['nameOfStudent'] = student
+      ? student.student
+        ? student.student.name
+        : null
+      : null;
 
     const comments = await this.gradeReviewComment.find({
       where: {
@@ -449,22 +473,6 @@ export class GradeReviewUseCase {
       },
       relations: ['user'],
     });
-
-    const gradeReviewInfo = {
-      id: gradeReview.id,
-      value: gradeReview.value,
-      expectedValue: gradeReview.expectedValue,
-      message: gradeReview.message,
-      isReviewed: gradeReview.isReviewed,
-    };
-
-    const commentsInfo = comments.map((comment) => ({
-      id: comment.id,
-      message: comment.message,
-      time: comment.createdAt,
-      byUser: comment.user ? comment.user.name : null,
-      avatar: comment.user ? comment.user.avatar : null,
-    }));
 
     return {
       info: gradeReview,
