@@ -8,6 +8,7 @@ import {
   Headers,
   Get,
   Query,
+  Param,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -138,14 +139,9 @@ export class GradeReviewController {
   @ApiOperation({
     summary: 'Get detail grade review',
   })
-  @ApiQuery({
-    name: 'grade-review-id',
-    description: 'Grade review ID',
-    required: true,
-  })
   async getDetailGradeReview(
     @Request() req: RequestWithUser,
-    @Query('grade-review-id') gradeReviewId: number,
+    @Param('id') gradeReviewId: number,
   ) {
     const gradeReview = await this.gradeReviewUseCase.viewGradeReviewDetail(
       req.user.userId,

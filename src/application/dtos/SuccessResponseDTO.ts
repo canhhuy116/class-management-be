@@ -23,7 +23,7 @@ export enum ReasonPhrase {
 export class SuccessResponseDTO {
   public message: string;
   public status: StatusCode;
-  public metadata: Record<string, any>;
+  public metadata: any;
 
   constructor({
     message,
@@ -34,7 +34,7 @@ export class SuccessResponseDTO {
     message?: string;
     statusCode?: StatusCode;
     reasonPhrase?: ReasonPhrase;
-    metadata?: Record<string, any>;
+    metadata?: any;
   }) {
     this.message = !message ? reasonPhrase : message;
     this.status = statusCode;
