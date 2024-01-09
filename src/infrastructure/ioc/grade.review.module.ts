@@ -14,6 +14,8 @@ import { GradeReviewRepository } from 'infrastructure/database/repository/GradeR
 import { StudentRepository } from 'infrastructure/database/repository/StudentRepository';
 import { GradeReviewController } from 'presentation/controllers/GradeReviewController';
 import { NotificationModule } from './notification.module';
+import { IGradeReviewCommentRepository } from 'application/ports/IGradeReviewCommentRepository';
+import { GradeReviewCommentRepository } from 'infrastructure/database/repository/GradeReviewCommentRepository';
 
 @Module({
   imports: [NotificationModule],
@@ -29,6 +31,10 @@ import { NotificationModule } from './notification.module';
     },
     { provide: IAssignmentRepository, useClass: AssignmentRepository },
     { provide: IClassRepository, useClass: ClassRepository },
+    {
+      provide: IGradeReviewCommentRepository,
+      useClass: GradeReviewCommentRepository,
+    },
   ],
 })
 export class GradeReviewModule {}

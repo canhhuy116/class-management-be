@@ -19,27 +19,11 @@ export class ReviewVM {
   })
   value: number;
 
-  @Optional()
-  @IsString()
-  @ApiProperty({
-    description: 'The comment of teacher when approve grade review',
-    example: 'This is a comment approve',
-  })
-  commentApprove: string;
-
-  @Optional()
-  @IsString()
-  @ApiProperty({
-    description: 'The comment of teacher when reject grade review',
-    example: 'This is a comment reject',
-  })
-  commentReject: string;
-
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty({
-    description: 'Is action reject or not',
+    description: 'Is action approve or not',
     example: true,
   })
-  isReject: boolean;
+  isApprove: boolean;
 }

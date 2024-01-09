@@ -20,10 +20,12 @@ import {
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { GradeReviewUseCase } from 'application/usecases/GradeReviewUseCase';
 import { GradeReview } from 'domain/models/GradeReview';
+import { GradeReviewComment } from 'domain/models/GradeReviewComment';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { CreateGradeReviewVM } from 'presentation/view-model/gradereviews/CreateGradeReviewVM';
+import { GradeReviewCommentVM } from 'presentation/view-model/gradereviews/GradeReviewCommentVM';
 import { GradeReviewVM } from 'presentation/view-model/gradereviews/GradeReviewVM';
 import { ReviewVM } from 'presentation/view-model/gradereviews/ReviewVM';
 
@@ -113,37 +115,56 @@ export class GradeReviewController {
     });
   }
 
-  @Get('view-review')
+  @Post('comment')
   @ApiOperation({
-    summary: 'Student view review of teacher',
+    summary: 'Teacher/Student comment in grade review',
   })
-  @ApiHeader({
-    name: 'class-id',
-    description: 'Class ID',
-    required: true,
-  })
-  @ApiQuery({
-    name: 'assignment-id',
-    description: 'Assignment ID',
-    required: true,
-  })
-  async getDetailGradeReview(
-    @Headers('class-id') classId: number,
+  async commentInGradeReview(
+    @Body() comment: GradeReviewCommentVM,
     @Request() req: RequestWithUser,
-    @Query('assignment-id') assignmentId: number,
   ) {
-    const gradeReview =
-      await this.gradeReviewUseCase.studentViewReviewOfTeacher(
-        req.user.userId,
-        classId,
-        assignmentId,
-      );
+    await this.gradeReviewUseCase.commentInGradeReview(
+      GradeReviewCommentVM.fromViewModel(comment),
+      req.user.userId,
+    );
 
     return new SuccessResponseDTO({
-      message: 'Get detail grade review successfully',
-      metadata: {
-        gradeReview,
-      },
+      message: 'Teacher/Student comment grade review successfully',
+      metadata: {},
     });
   }
+
+  // @Get('view-review')
+  // @ApiOperation({
+  //   summary: 'Student view review of teacher',
+  // })
+  // @ApiHeader({
+  //   name: 'class-id',
+  //   description: 'Class ID',
+  //   required: true,
+  // })
+  // @ApiQuery({
+  //   name: 'assignment-id',
+  //   description: 'Assignment ID',
+  //   required: true,
+  // })
+  // async getDetailGradeReview(
+  //   @Headers('class-id') classId: number,
+  //   @Request() req: RequestWithUser,
+  //   @Query('assignment-id') assignmentId: number,
+  // ) {
+  //   const gradeReview =
+  //     await this.gradeReviewUseCase.studentViewReviewOfTeacher(
+  //       req.user.userId,
+  //       classId,
+  //       assignmentId,
+  //     );
+
+  //   return new SuccessResponseDTO({
+  //     message: 'Get detail grade review successfully',
+  //     metadata: {
+  //       gradeReview,
+  //     },
+  //   });
+  // }
 }

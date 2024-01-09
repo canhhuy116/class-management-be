@@ -27,6 +27,10 @@ export class NotificationService implements INotificationService {
         return `${this.configService.get('FRONTEND_URL')}/class/${
           data.classId
         }/assignment/${data.assignmentId}/review`;
+      case NotificationType.REVIEW_COMMENT:
+        return `${this.configService.get('FRONTEND_URL')}/class/${
+          data.classId
+        }/assignment/${data.assignmentId}/review`;
       default:
         throw new BadRequestException('Invalid notification type');
     }

@@ -10,8 +10,6 @@ export class GradeReview extends BaseModel {
   message: string;
   isReviewed: boolean;
   assignment: Assignment;
-  commentApprove?: string;
-  commentReject?: string;
 
   constructor(assignmentId: number, expectedValue: number, message: string) {
     super();
@@ -39,20 +37,6 @@ export class GradeReview extends BaseModel {
   }
 
   markAsReviewed() {
-    this.isReviewed = true;
-
-    return this;
-  }
-
-  approve(comment: string) {
-    this.commentApprove = comment;
-    this.isReviewed = true;
-
-    return this;
-  }
-
-  reject(comment: string) {
-    this.commentReject = comment;
     this.isReviewed = true;
 
     return this;
