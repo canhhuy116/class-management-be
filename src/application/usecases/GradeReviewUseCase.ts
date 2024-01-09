@@ -390,62 +390,83 @@ export class GradeReviewUseCase {
     );
   }
 
-  // async studentViewReviewOfTeacher(
-  //   currentUserId: number,
-  //   classId: number,
-  //   assignmentId: number,
-  // ) {
-  //   this.logger.log('Student view review of teacher');
+  async studentViewReviewOfTeacher(
+    currentUserId: number,
+    gradeReviewId: number,
+  ) {
+    this.logger.log('Student view review of teacher');
 
-  //   const student = await this.studentRepository.findOne({
-  //     where: {
-  //       userId: currentUserId,
-  //       classId,
-  //     },
-  //   });
+    const gradeReview = await this.gradeReviewRepository.findOne({
+      where: {
+        id: gradeReviewId,
+      },
+    });
 
-  //   if (!student) {
-  //     throw new EntityNotFoundException('Student not found');
-  //   }
+    if (!gradeReview) {
+      throw new EntityNotFoundException('Grade review not found');
+    }
 
-  //   const gradeReviewsForAssignment = await this.gradeReviewRepository.find({
-  //     where: {
-  //       assignmentId,
-  //       studentId: student.studentId,
-  //     },
-  //   });
+    const assignment = await this.assignmentRepository.findOne({
+      where: {
+        id: gradeReview.assignmentId,
+      },
+    });
 
-  //   const gradeReviews = [];
+    if (!assignment) {
+      throw new EntityNotFoundException('Assignment not found');
+    }
 
-  //   for (const gradeReview of gradeReviewsForAssignment) {
-  //     const isReviewed = gradeReview.isReviewed;
+    const gradeComposition = await this.gradeComposition.findOne({
+      where: {
+        id: assignment.gradeCompositionId,
+      },
+    });
 
-  //     const studentComment = gradeReview.message;
+    if (!gradeComposition) {
+      throw new EntityNotFoundException('Grade composition not found');
+    }
 
-  //     if (!isReviewed) {
-  //       gradeReviews.push({
-  //         isReviewed,
-  //         isApproved: null,
-  //         studentComment,
-  //         teacherComment: null,
-  //       });
-  //       continue;
-  //     }
+    const findClass = await this.classRepository.findOne({
+      where: {
+        id: gradeComposition.classId,
+      },
+      relations: ['teachers.teacher', 'students.student'],
+    });
 
-  //     const isApproved = gradeReview.commentApprove != null;
+    if (!findClass) {
+      throw new EntityNotFoundException('Class not found');
+    }
 
-  //     const teacherComment = isApproved
-  //       ? gradeReview.commentApprove
-  //       : gradeReview.commentReject;
+    if (!findClass.hasMember(currentUserId)) {
+      throw new EntityNotFoundException('You are not in this class');
+    }
 
-  //     gradeReviews.push({
-  //       isReviewed,
-  //       isApproved,
-  //       studentComment,
-  //       teacherComment,
-  //     });
-  //   }
+    const comments = await this.gradeReviewComment.find({
+      where: {
+        gradeReviewId,
+      },
+      relations: ['user'],
+    });
 
-  //   return gradeReviews;
-  // }
+    const gradeReviewInfo = {
+      id: gradeReview.id,
+      value: gradeReview.value,
+      expectedValue: gradeReview.expectedValue,
+      message: gradeReview.message,
+      isReviewed: gradeReview.isReviewed,
+    };
+
+    const commentsInfo = comments.map((comment) => ({
+      id: comment.id,
+      message: comment.message,
+      time: comment.createdAt,
+      byUser: comment.user ? comment.user.name : null,
+      avatar: comment.user ? comment.user.avatar : null,
+    }));
+
+    return {
+      gradeReviewInfo,
+      commentsInfo,
+    };
+  }
 }

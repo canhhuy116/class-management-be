@@ -31,7 +31,7 @@ export const GradeReviewCommentEntity = new EntitySchema<GradeReviewComment>({
         name: 'grade_review_id',
       },
     },
-    userId: {
+    user: {
       type: 'many-to-one',
       target: 'User',
       joinColumn: {
