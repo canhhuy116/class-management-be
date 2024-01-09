@@ -77,6 +77,7 @@ export class GradeReviewController {
       metadata: gradeReviews.map((gradeReview) => {
         return {
           classId: gradeReview.classId,
+          className: gradeReview.className,
           gradeReviews: gradeReview.reviews.map((review: GradeReview) =>
             GradeReviewVM.toViewModel(review),
           ),

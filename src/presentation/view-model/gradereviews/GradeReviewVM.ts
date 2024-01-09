@@ -23,10 +23,18 @@ export class GradeReviewVM {
   @Expose()
   message: string;
 
+  @Expose()
+  time: Date;
+
+  @Expose()
+  avatar: string;
+
   static toViewModel(gradeReview: GradeReview): GradeReviewVM {
     const gradeReviewVM = plainToClass(GradeReviewVM, gradeReview, {
       excludeExtraneousValues: true,
     });
+
+    gradeReviewVM.time = gradeReview.createdAt;
 
     gradeReviewVM.assignmentName = gradeReview['assignment']
       ? gradeReview['assignment'].name

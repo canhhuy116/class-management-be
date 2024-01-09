@@ -170,8 +170,20 @@ export class GradeReviewUseCase {
         assignmentIds.includes(gradeReview.assignmentId),
       );
 
+      for (const gradeReview of gradeReviews) {
+        const student = classes
+          .find((classDetail) => classDetail.id == classId)
+          .students.find(
+            (studentDetail) => studentDetail.studentId == gradeReview.studentId,
+          );
+
+        gradeReview['avatar'] = student.student ? student.student.avatar : null;
+      }
+
       result.push({
         classId,
+        className: classes.find((classDetail) => classDetail.id == classId)
+          .name,
         reviews: gradeReviews,
       });
     }
