@@ -11,11 +11,9 @@ import { DomainException } from 'domain/exceptions/DomainException';
  * Http Error Filter.
  * Gets an HttpException or DomainException in code and creates an error response
  */
-@Catch(HttpException, DomainException)
-export class HttpExceptionFilter
-  implements ExceptionFilter<HttpException | DomainException>
-{
-  catch(exception: HttpException | DomainException, host: ArgumentsHost) {
+@Catch(Error)
+export class HttpExceptionFilter implements ExceptionFilter<Error> {
+  catch(exception: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
@@ -39,6 +37,9 @@ export class HttpExceptionFilter
     } else if (exception instanceof DomainException) {
       statusCode = HttpStatus.BAD_REQUEST;
       jsonResponse.message = exception.message;
+    } else {
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      jsonResponse.message = 'Internal server error';
     }
 
     response.status(statusCode).json(jsonResponse);
