@@ -75,8 +75,6 @@ export class GradeReviewController {
       req.user.userId,
     );
 
-    console.log(gradeReviews);
-
     return new SuccessResponseDTO({
       message: 'Get all grade review successfully',
       metadata: gradeReviews.map((gradeReview) => {
@@ -95,20 +93,12 @@ export class GradeReviewController {
   @ApiOperation({
     summary: 'Teacher review grade review',
   })
-  @ApiHeader({
-    name: 'class-id',
-    description: 'Class ID',
-    required: true,
-  })
-  @UseGuards(TeacherRoleGuard)
   async teacherReviewGradeReview(
-    @Headers('class-id') classId: number,
     @Request() req: RequestWithUser,
     @Body() review: ReviewVM,
   ) {
     await this.gradeReviewUseCase.teacherReviewGradeReview(
       review,
-      classId,
       req.user.userId,
     );
 
@@ -149,8 +139,6 @@ export class GradeReviewController {
       req.user.userId,
       gradeReviewId,
     );
-
-    console.log(gradeReview);
 
     return new SuccessResponseDTO({
       message: 'Get detail grade review successfully',
