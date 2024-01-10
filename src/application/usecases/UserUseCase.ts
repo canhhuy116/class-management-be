@@ -26,7 +26,7 @@ export class UsersUseCases {
       throw new NotFoundException(`The user {${userId}} has not found.`);
 
     for (const key in userUpdate) {
-      if (userUpdate[key]) userExists[key] = userUpdate[key];
+      userExists[key] = userUpdate[key];
     }
 
     const result = await this.usersRepository.update(userId, userExists);
