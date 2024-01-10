@@ -12,8 +12,9 @@ import { MailService } from 'infrastructure/service/MailService';
       useFactory: async (configService: ConfigService) => ({
         transport: {
           host: configService.get('MAIL_HOST'),
-          port: 587,
+          port: 465,
           secure: false,
+          service: 'Gmail',
           auth: {
             user: configService.get('MAIL_USER'),
             pass: configService.get('MAIL_PASSWORD'),
