@@ -198,7 +198,11 @@ export class AuthUseCase {
     const bodyMessage = `Hello ${user.name},\n\nYou requested to reset your password. Please click on the link below to reset it.\n\n${forgotPasswordLink}\n\nIf you didn't request this, please ignore this email.\n\nThanks`;
 
     // side effect so we don't need to wait for it
-    this.mailService.sendMail(user.email, 'Reset your password', bodyMessage);
+    await this.mailService.sendMail(
+      user.email,
+      'Reset your password',
+      bodyMessage,
+    );
   }
 
   async resetPassword(resetPasswordData: ResetPasswordDTO): Promise<void> {
