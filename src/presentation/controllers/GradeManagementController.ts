@@ -157,6 +157,8 @@ export class GradeManagementController {
     const studentGradeBoard =
       await this.gradeManagementUseCases.previewStudentGradeBoard(classId);
 
+    console.log(studentGradeBoard);
+
     return new SuccessResponseDTO({
       message: 'Preview student grade board successfully',
       metadata: studentGradeBoard,
@@ -300,6 +302,8 @@ export class GradeManagementController {
     const totalGradeBoard =
       await this.gradeManagementUseCases.showTotalGrade(classId);
 
+    console.log(totalGradeBoard);
+
     return new SuccessResponseDTO({
       message: 'show total grade board successfully',
       metadata: totalGradeBoard,
@@ -362,6 +366,8 @@ export class GradeManagementController {
       compositionId,
     );
 
+    console.log(grade);
+
     return new SuccessResponseDTO({
       message: 'View grade successfully',
       metadata: grade,
@@ -386,6 +392,8 @@ export class GradeManagementController {
         classId,
         req.user.userId,
       );
+
+    console.log(totalGradeBoard);
 
     return new SuccessResponseDTO({
       message: 'show total grade board successfully',

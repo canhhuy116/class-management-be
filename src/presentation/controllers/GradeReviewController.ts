@@ -75,6 +75,8 @@ export class GradeReviewController {
       req.user.userId,
     );
 
+    console.log(gradeReviews);
+
     return new SuccessResponseDTO({
       message: 'Get all grade review successfully',
       metadata: gradeReviews.map((gradeReview) => {
@@ -147,6 +149,8 @@ export class GradeReviewController {
       req.user.userId,
       gradeReviewId,
     );
+
+    console.log(gradeReview);
 
     return new SuccessResponseDTO({
       message: 'Get detail grade review successfully',
