@@ -21,11 +21,13 @@ import {
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { UsersUseCases } from 'application/usecases/UserUseCase';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
+import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { NotificationVM } from 'presentation/view-model/users/NotificationVM';
 import { UpdateUserVM } from 'presentation/view-model/users/UpdateUserVM';
 
 @ApiTags('Users')
 @Controller('api/v1/users')
+@UseInterceptors(SuccessInterceptor)
 export class UsersController {
   constructor(private readonly usersUseCases: UsersUseCases) {}
   @Get('/test/ci-cd')

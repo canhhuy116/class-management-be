@@ -29,6 +29,7 @@ import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
 import { Response } from 'express';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
 import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
+import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
 import { UpsertAssignmentVM } from 'presentation/view-model/grademanagement/CreateAssignment';
 import { InputStudentGradeAssignmentVM } from 'presentation/view-model/grademanagement/InputGradeStudentAssignment';
 
@@ -36,6 +37,7 @@ import { InputStudentGradeAssignmentVM } from 'presentation/view-model/grademana
 @ApiTags('GradeManagement')
 @Controller('api/v1/grade-management')
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(SuccessInterceptor)
 export class GradeManagementController {
   constructor(
     private readonly gradeManagementUseCases: GradeManagementUseCase,
