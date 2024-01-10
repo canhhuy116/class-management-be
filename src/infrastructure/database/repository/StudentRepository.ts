@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { BaseRepository } from './BaseRepository';
 import { ClassStudent } from 'domain/models/ClassStudent';
 import { IStudentRepository } from 'application/ports/IStudentRepository';
@@ -11,7 +10,7 @@ export class StudentRepository
   extends BaseRepository<ClassStudent>
   implements IStudentRepository
 {
-  constructor(@InjectConnection() connection: Connection) {
-    super(connection, StudentEntity);
+  constructor(entityManager: EntityManager) {
+    super(entityManager, StudentEntity);
   }
 }

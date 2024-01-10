@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './BaseRepository';
 import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { Connection, EntityManager } from 'typeorm';
 import { Grade } from 'domain/models/Grade';
 import { IGradeRepository } from 'application/ports/IGradeRepository';
 import { GradeEntity } from '../mapper/GradeEntity';
@@ -11,7 +11,7 @@ export class GradeRepository
   extends BaseRepository<Grade>
   implements IGradeRepository
 {
-  constructor(@InjectConnection() connection: Connection) {
-    super(connection, GradeEntity);
+  constructor(entityManager: EntityManager) {
+    super(entityManager, GradeEntity);
   }
 }

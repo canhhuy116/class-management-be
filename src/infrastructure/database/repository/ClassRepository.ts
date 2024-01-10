@@ -2,14 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './BaseRepository';
 import { Class } from 'domain/models/Class';
 import { IClassRepository } from 'application/ports/IClassRepository';
-import { InjectConnection } from '@nestjs/typeorm';
-import {
-  Connection,
-  FindManyOptions,
-  FindOneOptions,
-  FindOptions,
-  ObjectId,
-} from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ClassEntity } from '../mapper/ClassEntity';
 
 @Injectable()
@@ -17,8 +10,8 @@ export class ClassRepository
   extends BaseRepository<Class>
   implements IClassRepository
 {
-  constructor(@InjectConnection() connection: Connection) {
-    super(connection, ClassEntity);
+  constructor(entityManager: EntityManager) {
+    super(entityManager, ClassEntity);
   }
 
   // findOneByAdmin(option: FindOneOptions<Class>): Promise<Class> {

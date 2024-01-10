@@ -1,8 +1,7 @@
 import { IInvitationRepository } from 'application/ports/IInvitationRepository';
 import { InvitationEntity } from '../mapper/InvitationEntity';
 import { Injectable } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { BaseRepository } from './BaseRepository';
 import { Invitation } from 'domain/models/Invitation';
 
@@ -11,7 +10,7 @@ export class InvitationRepository
   extends BaseRepository<Invitation>
   implements IInvitationRepository
 {
-  constructor(@InjectConnection() connection: Connection) {
-    super(connection, InvitationEntity);
+  constructor(entityManager: EntityManager) {
+    super(entityManager, InvitationEntity);
   }
 }

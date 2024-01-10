@@ -28,7 +28,7 @@ async function bootstrap() {
 
     // REST Global middlewares
     app.enableCors({
-      origin: configService.get('FRONTEND_URL'),
+      origin: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
     });
