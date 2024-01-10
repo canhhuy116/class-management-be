@@ -32,7 +32,6 @@ async function bootstrap() {
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
     });
-    app.use(helmet());
     app.use(cookieParser(configService.get('SECRET_KEY')));
     app.use(compression());
     app.use(bodyParser.json({ limit: '50mb' }));
@@ -77,6 +76,7 @@ async function bootstrap() {
     const HOST = configService.get('HOST', 'localhost');
     const PORT = configService.get('PORT', '3000');
 
+    app.use(helmet());
     await app.listen(PORT);
     process.env.NODE_ENV !== 'production'
       ? Logger.log(
