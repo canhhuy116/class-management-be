@@ -39,7 +39,7 @@ export class HttpExceptionFilter implements ExceptionFilter<Error> {
       jsonResponse.message = exception.message;
     } else {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      jsonResponse.message = 'Internal server error';
+      jsonResponse.message = exception.message;
     }
 
     response.status(statusCode).json(jsonResponse);
