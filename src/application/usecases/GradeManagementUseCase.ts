@@ -54,8 +54,13 @@ export class GradeManagementUseCase {
     );
 
     const updatedStudents = excelStudents.map((student) => {
-      const studentId = student[this.columnsStudentList[0]].toString();
+      const studentId = student[this.columnsStudentList[0]]?.toString();
       const fullName = student[this.columnsStudentList[1]];
+      if (studentId === undefined || studentId === null) {
+        throw new InvalidValueException(
+          `Existed student ID is empty or invalid`,
+        );
+      }
 
       const existingStudentIndex = existingStudentIds.has(studentId)
         ? existingStudents.findIndex((s) => s.studentId === studentId)
