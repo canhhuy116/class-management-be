@@ -59,8 +59,6 @@ export class GradeCompositionController {
         req.user.userId,
       );
 
-    console.log(gradeCompositions);
-
     return new SuccessResponseDTO({
       message: 'Grade composition founded',
       metadata: gradeCompositions.map((gradeComposition) =>

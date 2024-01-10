@@ -49,7 +49,7 @@ export class AppModule implements OnModuleDestroy {
   onModuleDestroy() {
     // Close the TypeORM connection when the module is destroyed (app is stopping)
     this.connection
-      .close()
+      .destroy()
       .then(() => console.log('TypeORM connection closed.'));
   }
 }

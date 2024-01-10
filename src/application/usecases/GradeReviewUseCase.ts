@@ -198,11 +198,7 @@ export class GradeReviewUseCase {
     return result;
   }
 
-  async teacherReviewGradeReview(
-    reviewVM: ReviewVM,
-    classId: number,
-    currentUserId: number,
-  ) {
+  async teacherReviewGradeReview(reviewVM: ReviewVM, currentUserId: number) {
     this.logger.log('Teacher review grade review');
 
     const gradeReview = await this.gradeReviewRepository.findOne({
@@ -247,12 +243,6 @@ export class GradeReviewUseCase {
       throw new EntityNotFoundException('Grade composition is not viewable');
     }
 
-    if (gradeComposition.classId != classId) {
-      throw new EntityNotFoundException(
-        'Grade composition is not in this class',
-      );
-    }
-
     gradeReview.markAsReviewed();
 
     if (reviewVM.isApprove) {
@@ -289,7 +279,7 @@ export class GradeReviewUseCase {
     }
 
     await this.gradeReviewRepository.save(gradeReview);
-
+    const classId = gradeComposition.classId;
     const titleNotification = `Teacher review grade review for assignment ${findAssignment.name}`;
     const notificationType = NotificationType.REVIEW_REQUEST;
     const data = { classId, assignmentId: findAssignment.id };
