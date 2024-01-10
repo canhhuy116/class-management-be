@@ -37,8 +37,6 @@ export class User extends BaseModel {
     phoneNumber?: string,
     address?: string,
     studentId?: string,
-    googleId?: string,
-    facebookId?: string,
   ) {
     super();
     this.name = name;
@@ -47,7 +45,13 @@ export class User extends BaseModel {
     this.phoneNumber = phoneNumber;
     this.address = address;
     this.studentId = studentId;
+  }
+
+  withGoogleId(googleId: string) {
     this.googleId = googleId;
+  }
+
+  withFacebookId(facebookId: string) {
     this.facebookId = facebookId;
   }
 

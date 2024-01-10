@@ -33,14 +33,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ): Promise<any> {
     const { id, displayName, emails } = profile;
 
-    const googleUser = new User(
-      displayName,
-      emails[0].value,
-      null,
-      null,
-      null,
-      id,
-    );
+    const googleUser = new User(displayName, emails[0].value, null);
+
+    googleUser.withGoogleId(id);
 
     const user = await this.authUseCase.loginOauth2(googleUser);
 

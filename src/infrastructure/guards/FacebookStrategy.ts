@@ -35,15 +35,9 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     const fakeEmail = `${profile.id}@facebook.com`;
     profile.emails = [{ value: fakeEmail }];
 
-    const facebookUser = new User(
-      displayName,
-      fakeEmail,
-      null,
-      null,
-      null,
-      null,
-      id,
-    );
+    const facebookUser = new User(displayName, fakeEmail, null);
+
+    facebookUser.withFacebookId(id);
 
     const user = await this.authUseCase.loginOauth2(facebookUser);
 
