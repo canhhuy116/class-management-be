@@ -7,7 +7,6 @@ import {
   Request,
   Headers,
   Get,
-  Query,
   Param,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,7 +14,6 @@ import {
   ApiBearerAuth,
   ApiHeader,
   ApiOperation,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { SuccessResponseDTO } from 'application/dtos/SuccessResponseDTO';
@@ -23,8 +21,8 @@ import { GradeReviewUseCase } from 'application/usecases/GradeReviewUseCase';
 import { GradeReview } from 'domain/models/GradeReview';
 import { GradeReviewComment } from 'domain/models/GradeReviewComment';
 import { RequestWithUser } from 'infrastructure/guards/JwtStrategy';
-import { TeacherRoleGuard } from 'infrastructure/guards/TeacherRoleGuard';
 import { SuccessInterceptor } from 'infrastructure/interceptor/success.interceptor';
+import { GradeCompositionVM } from 'presentation/view-model/gradecompositions/GradeCompositionVM';
 import { CreateGradeReviewVM } from 'presentation/view-model/gradereviews/CreateGradeReviewVM';
 import { GradeReviewCommentVM } from 'presentation/view-model/gradereviews/GradeReviewCommentVM';
 import { GradeReviewVM } from 'presentation/view-model/gradereviews/GradeReviewVM';
@@ -148,6 +146,9 @@ export class GradeReviewController {
         gradeReview: GradeReviewVM.toViewModel(gradeReview.info),
         comments: gradeReview.comments.map((comment: GradeReviewComment) =>
           GradeReviewCommentVM.toViewModel(comment),
+        ),
+        gradeComposition: GradeCompositionVM.toViewModel(
+          gradeReview.gradeComposition,
         ),
       },
     });

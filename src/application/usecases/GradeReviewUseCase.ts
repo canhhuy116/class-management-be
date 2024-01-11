@@ -467,6 +467,7 @@ export class GradeReviewUseCase {
     return {
       info: gradeReview,
       comments,
+      gradeComposition,
     };
   }
 }
