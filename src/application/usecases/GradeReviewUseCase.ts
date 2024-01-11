@@ -115,7 +115,7 @@ export class GradeReviewUseCase {
 
     const titleNotification = `Student ${student.studentId} request review grade for assignment ${assignment.name}`;
     const notificationType = NotificationType.REQUEST_REVIEW;
-    const data = { classId, assignmentId: assignment.id };
+    const data = { classId, gradeReviewId: gradeReview.id };
     const receiverId = findGrade.teacherId;
 
     await this.notificationService.pushNotification(
@@ -282,7 +282,7 @@ export class GradeReviewUseCase {
     const classId = gradeComposition.classId;
     const titleNotification = `Teacher review grade review for assignment ${findAssignment.name}`;
     const notificationType = NotificationType.REVIEW_REQUEST;
-    const data = { classId, assignmentId: findAssignment.id };
+    const data = { classId, gradeReviewId: gradeReview.id };
     const studentAccount = await this.studentRepository.findOne({
       where: {
         studentId: gradeReview.studentId,
@@ -369,7 +369,7 @@ export class GradeReviewUseCase {
       ? `Teacher comment in grade review for assignment ${assignment.name}`
       : `Student comment in grade review for assignment ${assignment.name}`;
     const notificationType = NotificationType.REVIEW_COMMENT;
-    const data = { classId: findClass.id, assignmentId: assignment.id };
+    const data = { classId: findClass.id, gradeReviewId: gradeReview.id };
     const receiverId = findClass.isTeacher(currentUserId)
       ? student
         ? student.userId

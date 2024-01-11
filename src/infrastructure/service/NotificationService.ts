@@ -16,21 +16,21 @@ export class NotificationService implements INotificationService {
   private buildLink(notificationType: NotificationType, data: any): string {
     switch (notificationType) {
       case NotificationType.MARK_FINAl_GRADE:
-        return `${this.configService.get('FRONTEND_URL')}/class/${
+        return `${this.configService.get('FRONTEND_URL')}/grade/${
           data.classId
         }/score`;
       case NotificationType.REQUEST_REVIEW:
-        return `${this.configService.get('FRONTEND_URL')}/class/${
-          data.classId
-        }/assignment/${data.assignmentId}/review`;
+        return `${this.configService.get('FRONTEND_URL')}/grade/${
+          data.gradeReviewId
+        }`;
       case NotificationType.REVIEW_REQUEST:
-        return `${this.configService.get('FRONTEND_URL')}/class/${
-          data.classId
-        }/assignment/${data.assignmentId}/review`;
+        return `${this.configService.get('FRONTEND_URL')}/grade/${
+          data.gradeReviewId
+        }`;
       case NotificationType.REVIEW_COMMENT:
-        return `${this.configService.get('FRONTEND_URL')}/class/${
-          data.classId
-        }/assignment/${data.assignmentId}/review`;
+        return `${this.configService.get('FRONTEND_URL')}/grade/${
+          data.gradeReviewId
+        }`;
       default:
         throw new BadRequestException('Invalid notification type');
     }
