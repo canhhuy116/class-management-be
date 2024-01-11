@@ -18,7 +18,7 @@ export class NotificationService implements INotificationService {
       case NotificationType.MARK_FINAl_GRADE:
         return `${this.configService.get('FRONTEND_URL')}/grade/${
           data.classId
-        }/score`;
+        }/scores`;
       case NotificationType.REQUEST_REVIEW:
         return `${this.configService.get('FRONTEND_URL')}/grade/${
           data.gradeReviewId
