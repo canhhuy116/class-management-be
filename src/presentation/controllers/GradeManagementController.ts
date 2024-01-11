@@ -392,4 +392,28 @@ export class GradeManagementController {
       metadata: totalGradeBoard,
     });
   }
+
+  @Get('assignment')
+  @ApiOperation({
+    summary: 'Get all assignments',
+  })
+  @ApiHeader({
+    name: 'class-id',
+    description: 'Class ID',
+    required: true,
+  })
+  async getAllAssignments(
+    @Headers('class-id') classId: number,
+    @Request() req: RequestWithUser,
+  ) {
+    const assignments = await this.gradeManagementUseCases.getListAssignment(
+      classId,
+      req.user.userId,
+    );
+
+    return new SuccessResponseDTO({
+      message: 'Get all assignments successfully',
+      metadata: assignments,
+    });
+  }
 }

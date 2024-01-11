@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IAssignmentRepository } from 'application/ports/IAssignmentRepository';
+import { IClassRepository } from 'application/ports/IClassRepository';
 import { IExcelService } from 'application/ports/IExcelService';
 import { IGradeCompositionRepository } from 'application/ports/IGradeCompositionRepository';
 import { IGradeRepository } from 'application/ports/IGradeRepository';
@@ -25,6 +26,7 @@ export class GradeManagementUseCase {
     private readonly assignmentRepository: IAssignmentRepository,
     private readonly gradeRepository: IGradeRepository,
     private readonly notificationService: INotificationService,
+    private readonly classRepository: IClassRepository,
   ) {}
 
   async downloadStudentListTemplate(): Promise<Buffer> {
@@ -566,5 +568,44 @@ export class GradeManagementUseCase {
       totalMaxScore,
       weight: gradeComposition.weight,
     };
+  }
+
+  async getListAssignment(classId: number, currentUserId: number) {
+    const findClass = await this.classRepository.findOne({
+      where: { id: classId },
+    });
+
+    if (!findClass) {
+      throw new EntityNotFoundException(`The class ${classId} has not found`);
+    }
+
+    if (!findClass.hasMember(currentUserId)) {
+      throw new EntityNotFoundException(
+        `The user ${currentUserId} has not found in class ${classId}`,
+      );
+    }
+
+    const findGradeComposition = await this.grandeCompositionRepository.find({
+      where: { classId },
+    });
+
+    const listAssignment = [];
+
+    for (const gradeComposition of findGradeComposition) {
+      const assignments = await this.assignmentRepository.find({
+        where: { gradeCompositionId: gradeComposition.id },
+      });
+
+      for (const assignment of assignments) {
+        listAssignment.push({
+          assignmentId: assignment.id,
+          assignmentName: assignment.name,
+          maxScore: assignment.maxScore,
+          time: assignment.createdAt,
+        });
+      }
+    }
+
+    return listAssignment;
   }
 }
