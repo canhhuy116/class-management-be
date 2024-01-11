@@ -342,7 +342,7 @@ export class GradeManagementController {
     });
   }
 
-  @Get('/view-grade/:compositionId')
+  @Get('/view-grade')
   @ApiOperation({
     summary: 'View grade',
   })
