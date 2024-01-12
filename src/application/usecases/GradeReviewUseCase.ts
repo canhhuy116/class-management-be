@@ -444,6 +444,19 @@ export class GradeReviewUseCase {
       throw new EntityNotFoundException('You are not in this grade review');
     }
 
+    const grade = await this.gradeRepository.findOne({
+      where: {
+        assignmentId: gradeReview.assignmentId,
+        studentId: gradeReview.studentId,
+      },
+    });
+
+    if (!grade) {
+      throw new EntityNotFoundException('Grade not found');
+    }
+
+    gradeReview['currentGrade'] = grade.value;
+
     gradeReview['avatar'] = student
       ? student.student
         ? student.student.avatar

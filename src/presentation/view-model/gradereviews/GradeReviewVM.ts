@@ -29,6 +29,9 @@ export class GradeReviewVM {
   @Expose()
   avatar: string;
 
+  @Expose()
+  currentGrade: number;
+
   static toViewModel(gradeReview: GradeReview): GradeReviewVM {
     const gradeReviewVM = plainToClass(GradeReviewVM, gradeReview, {
       excludeExtraneousValues: true,
