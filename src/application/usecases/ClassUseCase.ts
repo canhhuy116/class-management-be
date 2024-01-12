@@ -110,7 +110,11 @@ export class ClassUseCases {
       throw new EntityNotFoundException('Class not found');
     }
 
-    if (!classDetail.hasMember(currentUserId)) {
+    const findUser = await this.userRepository.findOne({
+      where: { id: currentUserId },
+    });
+
+    if (!classDetail.hasMember(currentUserId) && !findUser.isAdmin()) {
       throw new ForbiddenException("You don't have permission to access");
     }
 
