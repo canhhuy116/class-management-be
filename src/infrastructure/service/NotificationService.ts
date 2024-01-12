@@ -16,7 +16,7 @@ export class NotificationService implements INotificationService {
   private buildLink(notificationType: NotificationType, data: any): string {
     switch (notificationType) {
       case NotificationType.MARK_FINAl_GRADE:
-        return `${this.configService.get('FRONTEND_URL')}/grade/${
+        return `${this.configService.get('FRONTEND_URL')}/class/${
           data.classId
         }/scores`;
       case NotificationType.REQUEST_REVIEW:
