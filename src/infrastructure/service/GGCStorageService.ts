@@ -9,11 +9,14 @@ export class CloudStorageService {
   private storage: Storage;
 
   constructor(private readonly configService: ConfigService) {
+    const privateKeyString = this.configService.get('PRIVATE_KEY');
+    const privateKeyData = privateKeyString.replace(/\\n/g, '\n');
+
     this.storage = new Storage({
       projectId: this.configService.get('PROJECT_ID'),
       credentials: {
         client_email: this.configService.get('CLIENT_EMAIL'),
-        private_key: this.configService.get('PRIVATE_KEY'),
+        private_key: privateKeyData,
       },
     });
     this.bucket = this.storage.bucket(
